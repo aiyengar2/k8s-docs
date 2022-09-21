@@ -13,7 +13,7 @@ In this section, we will discuss the underlying design of the [`cache.SharedInde
 
 > **Note:** A lot of the topics covered in the next section is covered phenomenally in a series of blog posts starting with [part 0](https://lairdnelson.wordpress.com/2018/01/07/understanding-kubernetes-tools-cache-package-part-0/) here. The content below is a rough summary of the content from the article; for a deeper dive, I recommend reading starting at part 0.
 
-> **Note:** We will not discuss how to manage multiple `cache.SharedIndexInformers` at once until we get to the section on [Lasso](./03_frameworks.md#lasso) or [Wrangler](./03_frameworks.md#wrangler), which are roughly Rancher's versions of the [kubernetes-sigs/controller-runtime](https://github.com/kubernetes-sigs/controller-runtime) + [kubernetes-sigs/kubebuilder](https://github.com/kubernetes-sigs/kubebuilder) frameworks, respectively. 
+> **Note:** We will not discuss how to manage multiple `cache.SharedIndexInformers` at once until we get to the section on [Lasso](./03_frameworks.md#lassohttpsgithubcomrancherlasso) or [Wrangler](./03_frameworks.md#wranglerhttpsgithubcomrancherwrangler), which are roughly Rancher's versions of the [kubernetes-sigs/controller-runtime](https://github.com/kubernetes-sigs/controller-runtime) + [kubernetes-sigs/kubebuilder](https://github.com/kubernetes-sigs/kubebuilder) frameworks, respectively. 
 > However, it should be noted that all of these frameworks are built on top of the same [`tools/cache`](https://pkg.go.dev/k8s.io/client-go/tools/cache) package from `k8s.io/client-go`.
 
 ### `tools/cache` Primitive Interfaces

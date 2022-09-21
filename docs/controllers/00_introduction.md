@@ -1,6 +1,8 @@
 ## Prerequisites
 
-It is expected that the reader of this material has a basic familiarity with Kubernetes, such as that of an average Kubernetes user who has interacted with Kubernetes resources in a cluster before via `kubectl` or some via other UI  (e.g. the Rancher UI) that exposes the names of underlying Kubernetes resources like `Pods`, `Deployments`, `Services`, etc.
+It is expected that the reader of this material has a basic familiarity with Kubernetes, such as that of an average Kubernetes user who has interacted with Kubernetes resources in a cluster before via `kubectl` or some via other UI  (e.g. the Rancher UI) that exposes the names of underlying Kubernetes resources like `Pods`, `Deployments`, `Services`, etc. 
+
+A basic familiarity with Golang (concepts like `structs` or `interfaces`) is also presumed, especially in later sections.
 
 ## Introduction To Kubernetes
 
