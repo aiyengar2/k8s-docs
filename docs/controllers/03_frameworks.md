@@ -125,113 +125,249 @@ But for practical purposes, we can just think of this as the normal `cache.Share
 
 ### `New` from [`pkg/controller`]((https://github.com/rancher/lasso/blob/master/pkg/controller))
 
-The `New` function in the `pkg/controller` module is the entrypoint for understanding how [Lasso](https://github.com/rancher/lasso) works to solve the first feature that our Controller Framework needs to implement. As a reminder, what we would like Lasso to implement for this feature is everything below the dotted line in this diagram:
+The `New` function in the `pkg/controller` module is the entrypoint for understanding how [Lasso](https://github.com/rancher/lasso) works to solve the first feature that our Controller Framework needs to implement. 
+
+As a reminder, what we would like Lasso to implement for this feature is everything below the dotted line in this diagram; specifically the **parallel execution** of handlers and **re-enqueue on errors**:
 
 ![Client-Go Controller Diagram](../images/client-go-controller-interaction.jpg)
 
-
----
----
----
----
-
-# WIP: Do Not Read
-
-### Special Topic: [OpenAPI Schemas](https://spec.openapis.org/oas/latest.html) and [Swagger](https://swagger.io/docs/specification/2-0/what-is-swagger/)
-
-In the world of HTTP APIs, it's common for any program that offers up an HTTP API to provide an OpenAPI Specification, a JSON-based specification that is described on [OpenAPI's own website](https://spec.openapis.org/oas/latest.html) as follows:
-
-> The OpenAPI Specification (OAS) defines a standard, programming language-agnostic interface description for HTTP APIs, which allows both humans and computers to discover and understand the capabilities of a service without requiring access to source code, additional documentation, or inspection of network traffic
-
-Swagger was the original specification (and suite of tools around the specification) that OpenAPI emerged from, which is why you will commonly see that OpenAPI specifications are outlined in a file called the `swagger.json`, as seen in Kubernetes's own repo [under `api/open-api-spec/swagger.json`](https://github.com/kubernetes/kubernetes/blob/release-1.5/api/openapi-spec/swagger.json). In [Swagger's own words](https://swagger.io/docs/specification/2-0/what-is-swagger/):
-
-> Swagger allows you to describe the structure of your APIs so that machines can read them. The ability of APIs to describe their own structure is the root of all awesomeness in Swagger. Why is it so great? Well, by reading your API’s structure, we can automatically build beautiful and interactive API documentation. We can also automatically generate client libraries for your API in many languages and explore other possibilities like automated testing. Swagger does this by asking your API to return a YAML or JSON that contains a detailed description of your entire API. This file is essentially a resource listing of your API which adheres to OpenAPI Specification. The specification asks you to include information like:
->
-> What are all the operations that your API supports?
->
-> What are your API’s parameters and what does it return?
->
-> Does your API need some authorization?
->
-> And even fun things like terms, contact information and license to use the API.
-
-In the Kubernetes world, every Kubernetes resource is required to have an `OpenAPISchema` that provides this specification, which allows Kubernetes clients like `kubectl` or your own controllers to understand how to **locally validate** the structure of the Kubernetes resources that you are passing to and getting from the API Server **without contacting the API Server for verification every single time**.
-
-> **Note:** This schema is also generally generated automatically for you via code generation from `go generate` by most controller frameworks, as we will discuss later as part of the deep dive into [Wrangler](#wranglerhttpsgithubcomrancherwrangler).
-
-### The [`discovery.Interface`](https://pkg.go.dev/k8s.io/client-go/discovery#DiscoveryInterface)
+On calling the `New` function, we see that the following logic is executed, which generally utilizes our `cache.SharedIndexInformer` created from the `NewCache` function above:
 
 ```go
-type DiscoveryInterface interface {
-	RESTClient() restclient.Interface
-	ServerGroupsInterface
-	ServerResourcesInterface
-	ServerVersionInterface
-	OpenAPISchemaInterface
-	OpenAPIV3SchemaInterface
-}
+func New(name string, informer cache.SharedIndexInformer, startCache func(context.Context) error, handler Handler, opts *Options) Controller {
+	opts = applyDefaultOptions(opts)
 
-type ServerGroupsInterface interface {
-	// ServerGroups returns the supported groups, with information like supported versions and the
-	// preferred version.
-	ServerGroups() (*metav1.APIGroupList, error)
-}
+	controller := &controller{
+		name:        name,
+		handler:     handler,
+		informer:    informer,
+		rateLimiter: opts.RateLimiter,
+		startCache:  startCache,
+	}
 
-type ServerResourcesInterface interface {
-	// ServerResourcesForGroupVersion returns the supported resources for a group and version.
-	ServerResourcesForGroupVersion(groupVersion string) (*metav1.APIResourceList, error)
-	// ServerGroupsAndResources returns the supported groups and resources for all groups and versions.
-	//
-	// The returned group and resource lists might be non-nil with partial results even in the
-	// case of non-nil error.
-	ServerGroupsAndResources() ([]*metav1.APIGroup, []*metav1.APIResourceList, error)
-	// ServerPreferredResources returns the supported resources with the version preferred by the
-	// server.
-	//
-	// The returned group and resource lists might be non-nil with partial results even in the
-	// case of non-nil error.
-	ServerPreferredResources() ([]*metav1.APIResourceList, error)
-	// ServerPreferredNamespacedResources returns the supported namespaced resources with the
-	// version preferred by the server.
-	//
-	// The returned resource list might be non-nil with partial results even in the case of
-	// non-nil error.
-	ServerPreferredNamespacedResources() ([]*metav1.APIResourceList, error)
-}
+	informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
+		AddFunc: controller.handleObject,
+		UpdateFunc: func(old, new interface{}) {
+			if !opts.SyncOnlyChangedObjects || old.(ResourceVersionGetter).GetResourceVersion() != new.(ResourceVersionGetter).GetResourceVersion() {
+				// If syncOnlyChangedObjects is disabled, objects will be handled regardless of whether an update actually took place.
+				// Otherwise, objects will only be handled if they have changed
+				controller.handleObject(new)
+			}
+		},
+		DeleteFunc: controller.handleObject,
+	})
 
-type ServerVersionInterface interface {
-	// ServerVersion retrieves and parses the server's version (git version).
-	ServerVersion() (*version.Info, error)
-}
-
-type OpenAPISchemaInterface interface {
-	// OpenAPISchema retrieves and parses the swagger API schema the server supports.
-	OpenAPISchema() (*openapi_v2.Document, error)
-}
-
-type OpenAPIV3SchemaInterface interface {
-	OpenAPIV3() openapi.Client
+	return controller
 }
 ```
 
-### The [`meta.RESTMapper`](https://pkg.go.dev/k8s.io/apimachinery/pkg/api/meta#RESTMapper)
+As seen in the Go code embedded above, we simply take in the `cache.SharedIndexInformer` and add a **single** `EventHandler` that calls the `handleObject` function on **any operation** that occurs to a Kubernetes resource that our informer watches for. We also take in a `Handler`, which is generically defined as follows:
 
-Discussion about GVK v.s. GVR
+```go
+type Handler interface {
+	OnChange(key string, obj runtime.Object) error
+}
+```
 
-> You’ll also hear mention of resources on occasion. A resource is simply a use of a Kind in the API. Often, there’s a one-to-one mapping between Kinds and resources. For instance, the pods resource corresponds to the Pod Kind. However, sometimes, the same Kind may be returned by multiple resources. For instance, the Scale Kind is returned by all scale subresources, like deployments/scale or replicasets/scale. This is what allows the Kubernetes HorizontalPodAutoscaler to interact with different resources. With CRDs, however, each Kind will correspond to a single resource.
+> **Note:** Why don't we have different `handleObject` functions for different types of operations and why does the `Handler` only support `OnChange` operations?
+>
+> In the Lasso controller world (and generically in the Kubernetes controller world), handlers that are defined are expected to operate in a **declarative** way: that is, they should not be concerned with **how** a resource ended up in the state that it is in, but rather only be concerned about **what** state the resource is currently in to determine what should happen next.
+>
+> The expectation here is that even if a handler results in the resource itself being modified (i.e. updating the `status` of a resource according to the `spec` fields), it should be **eventually consistent** with a desired definition of a resource.
+>
+> Therefore, it is bad practice in controllers to do something such as adding a timestamp for when a resource was handled on the resource itself, since that will never be consistent (as adding the timestamp triggers a change, which retriggers the controller, and goes through an infinite loop).
+>
+> Understanding this declarative nature of controller handlers is one of the hardest parts of designing controller handlers but is the heart of Kubernetes's reconciliation model for controllers.
+>
+> This is also why Kubernetes controllers are often described as following a Level Triggered system design; if you would like to dig into the technicalities, please read [this article on Level Triggering and Reconciliation in Kubernetes](https://medium.com/hackernoon/level-triggering-and-reconciliation-in-kubernetes-1f17fe30333d).
 
-> Notice that resources are always lowercase, and by convention are the lowercase form of the Kind.
+And when we look at the `handleObject` function, we see that all it really does is handle some edge cases and call `enqueue` in turn, which will either add the enqueued object to a list of `[]startKey` (which is just a list of `<namespace>/<name>` strings that gets called on first `Run`ning the controller) or directly add it to `c.workqueue`:
 
-Maps GVR -> GVK
+```go
+func (c *controller) handleObject(obj interface{}) {
+	if _, ok := obj.(metav1.Object); !ok {
+		tombstone, ok := obj.(cache.DeletedFinalStateUnknown)
+		if !ok {
+			log.Errorf("error decoding object, invalid type")
+			return
+		}
+		newObj, ok := tombstone.Obj.(metav1.Object)
+		if !ok {
+			log.Errorf("error decoding object tombstone, invalid type")
+			return
+		}
+		obj = newObj
+	}
+	c.enqueue(obj)
+}
 
-### The 
+func (c *controller) enqueue(obj interface{}) {
+	var key string
+	var err error
+	if key, err = cache.MetaNamespaceKeyFunc(obj); err != nil {
+		log.Errorf("%v", err)
+		return
+	}
+	c.startLock.Lock()
+	if c.workqueue == nil {
+		c.startKeys = append(c.startKeys, startKey{key: key})
+	} else {
+		c.workqueue.Add(key)
+	}
+	c.startLock.Unlock()
+}
+```
 
-### The [`runtime.Scheme`](https://pkg.go.dev/k8s.io/client-go/pkg/runtime#Scheme)
+As described [at the start of this section](#lassohttpsgithubcomrancherlasso), we will skip over discussing `startKeys` since that falls under `Lazy / "Deferred" Execution Or Automatic "Retry" logic` that optimizes the way that controllers are started. 
+
+Instead, we will just look at what happens on an `enqueue` call when a controller has already started, which is a great way to introduce the [`k8s.io/client-go/util/workqueue`](https://pkg.go.dev/k8s.io/client-go/util/workqueue).
+
+#### The [`k8s.io/client-go/util/workqueue`](https://pkg.go.dev/k8s.io/client-go/util/workqueue)
+
+On calling `Start` on the our controller, we instantiate and populate (with the `startKeys` referenced above) a `workqueue.DelayingInterface` with the following call:
+
+```go
+c.workqueue = workqueue.NewNamedRateLimitingQueue(c.rateLimiter, c.name)
+```
+
+This effectively gives us a [`workqueue.DelayingInterface`](https://pkg.go.dev/k8s.io/client-go/util/workqueue#DelayingInterface), which is a type of [`workqueue.Interface`](https://pkg.go.dev/k8s.io/client-go/util/workqueue#Interface) that implements the following functions:
+
+```go
+type DelayingInterface interface {
+	Interface
+	// AddAfter adds an item to the workqueue after the indicated duration has passed
+	AddAfter(item interface{}, duration time.Duration)
+}
+
+type Interface interface {
+	Add(item interface{})
+	Len() int
+	Get() (item interface{}, shutdown bool)
+	Done(item interface{})
+	ShutDown()
+	ShutDownWithDrain()
+	ShuttingDown() bool
+}
+```
+
+While we won't go through the specific details of the implementation, effectively the `workqueue.Interface` offers us something that adheres to the following guarantees, as described at the top of the Go documentation for the package:
+
+> Package workqueue provides a simple queue that supports the following features:
+> 
+> - Fair: items processed in the order in which they are added.
+>
+> - Stingy: a single item will not be processed multiple times concurrently, and if an item is added multiple times before it can be processed, it will only be processed once.
+>
+> - Multiple consumers and producers. In particular, it is allowed for an item to be reenqueued while it is being processed.
+>
+> - Shutdown notifications.
+
+These guarentees, especially the first two, are exactly what we need in order to define **parallel execution** of handlers with the ability to **re-enqueue errors**.
+
+Specifically:
+- The `Fair` guarantee ensures that we execute on changes that we see from the Kubernetes API server in order.
+- The `Stingy` guarantee ensures that when a worker thread pulls an item (normally a string in the format `<namespace/name>`) off the workqueue, it is **the only one that is allowed to be working on that specific item** until the `Done(item)` operation is called on the resource. Till then, other worker threads will only receive other items, which is exactly what we want to happen.
+- The `Multiple consumers and producers` guarantee allows us to re-enqueue an item while it is being processed; for example, if the resource changes while your controller is trying to handle it.
+- The `Shutdown notifications` guarantee allows us to stop controllers if required. This can be used to gracefully shutdown controllers to finish processing before exit.
+
+#### Coming Back Full Circle
+
+With the guarentees of the [`workqueue.DelayingInterface`](https://pkg.go.dev/k8s.io/client-go/util/workqueue#DelayingInterface) at hand, the implementation of a Single Custom Controller is now a lot simpler to describe.
+
+1. As we discussed [above](#new-from-pkgcontrollerhttpsgithubcomrancherlassoblobmasterpkgcontroller), we know that our `ResourceEventHandler` will effectively enqueue the object onto the [`workqueue.DelayingInterface`](https://pkg.go.dev/k8s.io/client-go/util/workqueue#DelayingInterface) by calling `.Add("<namespace>/<name>")`.
+
+2. When we start our controller, with the call to `Start(ctx context.Context, workers int)`, we will simply start our `cache.SharedIndexInformer`, wait for it to be ready (check if `cache.SharedIndexInformer.HasSynced` is true), and call `c.run(workers, ctx.Done())` **in a separate goroutine**.
+
+> **Note:** Why do we call `run` in a separate goroutine?
+>
+> `Start` is not expected to be a blocking call. This is why binaries that start controllers tend to end with something like `<-cmd.Context().Done()`
+
+> **Note:** What is the context provided?
+>
+> Generally this will be a context that listens to OS signals to trigger a graceful shutdown, i.e. `ctx := signals.SetupSignalHandler(context.Background())`
+
+3. On calling `run`, we add the original deferred `[]startKey` to the `workqueue.DelayingInterface` for processing and call `runWorker` in as many goroutines as workers provided with the following code:
+
+```go
+// Launch two workers to process Foo resources
+for i := 0; i < workers; i++ {
+    go wait.Until(c.runWorker, time.Second, stopCh)
+}
+```
+
+> **Note:** What is `wait.Until`?
+>
+> It just recalls `runWorker` any time it exits out after the duration provided until the `stopCh` exits.
 
 
+4. For each worker goroutine that is running `runWorker`, we infinitely call `processNextWorkItem`
 
-In [Lasso](https://github.com/rancher/lasso), 
+```go
+func (c *controller) runWorker() {
+	for c.processNextWorkItem() {
+	}
+}
+```
 
-### [Wrangler](https://github.com/rancher/wrangler)
+5. When we process a specific work item, we get the specific item from the `workqueue.DelayingInterface` and process it, logging any errors we might see unless it was due to a re-enqueue (which may happen if the `resourceVersion` of the Kubernetes resource is out-of-date):
 
-TBD
+
+```go
+func (c *controller) processNextWorkItem() bool {
+	obj, shutdown := c.workqueue.Get()
+
+	if shutdown {
+		return false
+	}
+
+	if err := c.processSingleItem(obj); err != nil {
+		if !strings.Contains(err.Error(), "please apply your changes to the latest version and try again") {
+			log.Errorf("%v", err)
+		}
+		return true
+	}
+
+	return true
+}
+```
+
+6. Finally, we process the item itself in that given worker goroutine, which eventually calls the `OnChange` operation from our single `Handler` and logs a metric. If there's an error, we add the item back to the workqueue using the delaying interface (which is how we implement Exponential Backoff on controller retries, since the original `workqueue.RateLimitingInterface` provided is generally one that rate limits in that fashion):
+
+```go
+func (c *controller) processSingleItem(obj interface{}) error {
+	var (
+		key string
+		ok  bool
+	)
+
+	defer c.workqueue.Done(obj)
+
+	if key, ok = obj.(string); !ok {
+		c.workqueue.Forget(obj)
+		log.Errorf("expected string in workqueue but got %#v", obj)
+		return nil
+	}
+	if err := c.syncHandler(key); err != nil {
+		c.workqueue.AddRateLimited(key)
+		return fmt.Errorf("error syncing '%s': %s, requeuing", key, err.Error())
+	}
+
+	c.workqueue.Forget(obj)
+	return nil
+}
+
+func (c *controller) syncHandler(key string) error {
+	obj, exists, err := c.informer.GetStore().GetByKey(key)
+	if err != nil {
+		metrics.IncTotalHandlerExecutions(c.name, "", true)
+		return err
+	}
+	if !exists {
+		return c.handler.OnChange(key, nil)
+	}
+
+	return c.handler.OnChange(key, obj.(runtime.Object))
+}
+```
+
+We have now implemented our first feature: **Re-trigger the reconciliation process on handler errors and handle reconciliation in parallel**!
