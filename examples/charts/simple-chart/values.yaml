@@ -1,0 +1,10 @@
+commonLabels:
+  app: my-app
+
+data:
+  hello: world
+
+secret:
+  enabled: false
+
+specialConfigMap: false

@@ -1,0 +1,1 @@
+{{ include "simple-chart.specialConfigMap" . }}

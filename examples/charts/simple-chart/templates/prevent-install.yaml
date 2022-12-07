@@ -1,0 +1,3 @@
+#{{- if gt (len (lookup "rbac.authorization.k8s.io/v1" "ClusterRole" "" "")) 0 -}}
+# {{- required "This chart is not ever intended to be installed onto a live cluster. This failure will only ever be emitted on an attempt to install this chart." "" -}}
+#{{- end -}}

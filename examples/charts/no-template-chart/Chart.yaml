@@ -1,0 +1,11 @@
+apiVersion: v2
+name: no-template-chart
+description: No Template Chart
+version: 0.0.0
+appVersion: 0.0.0
+annotations:
+  catalog.cattle.io/certified: rancher
+maintainers:
+- email: arvind.iyengar@suse.com
+  name: aiyengar2
+

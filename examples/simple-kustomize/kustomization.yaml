@@ -1,0 +1,4 @@
+commonLabels:  
+  app: my-app
+resources:
+- manifest.yaml
