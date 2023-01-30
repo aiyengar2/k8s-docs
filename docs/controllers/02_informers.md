@@ -276,7 +276,7 @@ Once we have a an auto-populating and auto-processing `cache.Queue` of resource 
 1. **Store the "current state of the world" in-memory**
 2. **Trigger an action on "processing" a change to a resource**
 
-This is where the `cache.SharedIndexInformer` comes into play, which can simply be created by the following function:
+This is where the `cache.SharedInformer` comes into play, which can simply be created by the following function:
 
 `func NewSharedInformer(lw cache.ListerWatcher, exampleObject runtime.Object, defaultEventHandlerResyncPeriod time.Duration) SharedInformer`
 
