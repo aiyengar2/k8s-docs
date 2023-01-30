@@ -360,7 +360,7 @@ Diagrammatically, it looks like this:
 
 ### What is a `SharedIndexInformer`?
 
-The SharedIndexInformer is the final version of our solution; it's nothing more than the same SharedInformer except you provide an `cache.Indexer` to it instead of expecting it to automatically create the `cache.Store` for you, where a `cache.Indexer` is nothing more than a Store with additional support for indexing (which is exactly the additional feature our [ThreadSafeStore](#the-cachestorehttpspkggodevk8sioclient-gotoolscachestore) supports!).
+The SharedIndexInformer is the final version of our solution; it's nothing more than the same SharedInformer except you provide an `cache.Indexer` to it instead of expecting it to automatically create the `cache.Store` for you, where a `cache.Indexer` is nothing more than a Store with additional support for indexing (which is exactly the additional feature our [ThreadSafeStore]([#the-cachestorehttpspkggodevk8sioclient-gotoolscachestore](https://pkg.go.dev/k8s.io/client-go/tools/cache#ThreadSafeStore)) supports!).
 
 ```go
 type Indexer interface {
