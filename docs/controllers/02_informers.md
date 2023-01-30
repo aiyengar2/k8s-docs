@@ -84,7 +84,7 @@ Since it is so generically defined, a Store can be anything in the backend; the 
 
 Leveraging the generic definition of a `cache.Store` interface, the `cache.Queue` is another interface that can be treated as a `cache.Store`, but the underlying object has the ability to additionally **process** items that were added to it; on processing an item, it will be removed from the `cache.Queue`.
 
-> **Note:** A `cache.Queue` does not **embed** `cache.Store`; this just means that anything that manages to satisfy the definition of a `cache.Queue` can also be used as a `cache.Store`.
+> **Note:** A `cache.Queue` **embeds** `cache.Store`; this just means that anything that manages to satisfy the definition of a `cache.Queue` can also be used as a `cache.Store`.
 
 ```go
 type Queue interface {
