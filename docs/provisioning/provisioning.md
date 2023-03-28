@@ -206,7 +206,7 @@ It installs `rancher/system-agent` by supplying the Infrastructure Provider with
 The install script will perform the following three actions:
 - Validate the CA certificates provided to the script
 - Make a request to the provided server url (expected to be Rancher's URL) to get the connection information for this machine, which will include the `KUBECONFIG` that allows the node to communicate with the Rancher management cluster
-- Install [`rancher/system-agent`](https://github.com/rancher/system-agent) onto the node as a [systemd](https://systemd.io/) Service, utilizig the `KUBECONFIG` from the previous step, which will configure `rancher/system-agent` to start watching the `machine-plan` Secret
+- Install [`rancher/system-agent`](https://github.com/rancher/system-agent) onto the node as a [systemd](https://systemd.io/) Service, utilizing the `KUBECONFIG` from the previous step, which will configure `rancher/system-agent` to start watching the `machine-plan` Secret
 
 > **Note**: Why deploy `rancher/system-agent` as a [systemd](https://systemd.io/) Service?
 >
