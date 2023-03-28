@@ -108,6 +108,8 @@ To see a concrete example of this, please check out the resources shown in the [
 > - Objects in the cluster under the old `desiredSet` but not in the new `desiredSet` are **deleted**
 > - Objects in the `desiredSet` but not in the cluster under the old `desiredSet` are **created**
 > - Objects in both the cluster and the new `desiredSet` are **patched**, if necessary
+>
+> To run commands to see what `desiredSets` are in your cluster, please see the Bash functions defined [here](./walkthrough.md#utility-functions).
 
 > **Note**: Why does apply using annotations instead of [Owner References](https://kubernetes.io/docs/concepts/overview/working-with-objects/owners-dependents/)?
 >
