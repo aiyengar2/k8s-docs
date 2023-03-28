@@ -181,13 +181,13 @@ Once that Job is completed (or if it fails), we can update the `<Infrastructure>
 
 #### How does Provisioning V2 support SSHing into Machines?
 
-While normal CAPI doesn't necessarily specify that Infrastructure Providers are supposed to support actions like SSHing into nodes, Rancher supports SSHing into provisioned nodes via the [`rancher/steve`](https://github.com/rancher/steve) API hosted by Rancher to access the downstream Kubernetes API.
+While normal CAPI doesn't necessarily specify that Infrastructure Providers are supposed to support actions like SSHing into nodes, Rancher supports SSHing into provisioned nodes via the [`rancher/steve`](https://github.com/rancher/steve) API hosted by Rancher to access the downstream Kubernetes cluster's API.
 
 The Rancher Infrastructure Provider supports this with two actions:
-1. It creates the Secret with no contents in `pkg/controllers/provisioningv2/rke2/machineprovision` by a **direct apply**; as a result, the object set ID for this apply action is `""`, not filled in like when applies are performed via `*GeneratingHandler`s
-2. It specifies a `--secret-name` equivalent to the Secret name and `--secret-namespace` equivalent to the namespace of the Machine to the `rancher/machine` Pod on provisioning, which results in `rancher/machine` using a Kubernetes Secret client to update that secret to contain all the state information it emits on a successful provision, which includes things like the IP address of the node with is used to SSH into it
+1. It creates the Secret with no contents in `pkg/controllers/provisioningv2/rke2/machineprovision` by a **direct apply**; as a result, the object set ID for this apply action is `""`, not filled in like when an apply is performed via a `*GeneratingHandler`
+2. It supplies `--secret-name` and `--secret-namespace` (equivalent to name and namespace of the above Secret) as arguments to the `rancher/machine` Pod on provisioning, which results in `rancher/machine` using a Kubernetes Secret client to update that secret to contain all the state information it emits on a successful provision, which includes things like the IP address of the node.
 
-As a result, on receiving an API request to SSH into a node, Rancher is able to query this `machine-state` Secret to figure out how to perform an SSH request into the target node.
+As a result, on receiving an API request to SSH into a node, Rancher is able to query this `machine-state` Secret to figure out how to perform an SSH request into the target node (such as identifying the IP address that can be used to run the SSH command).
 
 This `machine-state` Secret is expected to live for as long as the Machine does and should not be deleted.
 
