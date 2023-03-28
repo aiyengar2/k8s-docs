@@ -197,11 +197,13 @@ This `machine-state` Secret is expected to live for as long as the Machine does 
 
 Unlike in upstream CAPI, where the expectation is that each bootstrap provider generally **directly** installs [the relevant Kubernetes components per node](../controllers/00_introduction.md#what-does-it-mean-to-install-kubernetes-onto-a-set-of-servers), Rancher simply installs [`rancher/system-agent`](https://github.com/rancher/system-agent) onto the node as a [systemd](https://systemd.io/) Service with a `KUBECONFIG` that allows the node to communicate with the Rancher management cluster.
 
-It installs `rancher/system-agent` by supplying the Infrastructure Provider with a Secret (via the `RKEBootstrap`s `.status.dataSecretName`) that contains the [`install.sh` found in the `rancher/system-agent` repo](https://github.com/rancher/system-agent/blob/main/install.sh)). 
+#### How does Rancher bootstrap provisioned machines?
+
+It installs `rancher/system-agent` by supplying the Infrastructure Provider with a Secret (via the `RKEBootstrap`s `.status.dataSecretName`) that contains the [`install.sh` found in the `rancher/system-agent` repo](https://github.com/rancher/system-agent/blob/main/install.sh)). It is the Infrastructure Provider's responsibility to execute the script that is provided in this way by the Bootstrap Provider.
 
 > **Note**: For Windows, it supplies the [`install.ps1` found in the `rancher/wins` repo](https://github.com/rancher/wins/blob/main/install.ps1) to the Secret instead, since `rancher/wins` directly embeds the `rancher/system-agent` within it.
 
-On running these scripts, the script will perform the following three actions:
+The install script will perform the following three actions:
 - Validate the CA certificates provided to the script
 - Make a request to the provided server url (expected to be Rancher's URL) to get the connection information for this machine, which will include the `KUBECONFIG` that allows the node to communicate with the Rancher management cluster
 - Install [`rancher/system-agent`](https://github.com/rancher/system-agent) onto the node as a [systemd](https://systemd.io/) Service, utilizig the `KUBECONFIG` from the previous step, which will configure `rancher/system-agent` to start watching the `machine-plan` Secret
