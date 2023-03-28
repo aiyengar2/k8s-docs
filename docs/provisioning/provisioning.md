@@ -6,7 +6,7 @@
 
 To read more about CAPI, just check out the docs linked above! 
 
-The rest of this document will assume that the user has some basic familiarity with what CAPI is and what CRDs it offers from reading those docs.
+The rest of this document will assume that the user has some basic familiarity with CAPI from reading those docs.
 
 > **Note**: Rancher's Provisioning V2 is **not CAPI**; it is considered to be "CAPI-driven", which means that while it uses CAPI's controllers (which are embedded directly into Rancher) to **initially** drive the provisioning of nodes and clusters, it handles features like upgrading existing nodes and clusters for a new configuration (e.g. a new Kubernetes version) in a completely different way that upstream CAPI does once that initial process has taken place.
 >
