@@ -70,7 +70,7 @@ graph LR;
     v1Cluster("provisioning.cattle.io Cluster"):::ProvisioningV2;
 
     %%%% v1.Cluster Children
-    subgraph On provisioning.cattle.io Create (Rancher)
+    subgraph On provisioning.cattle.io Create
     capiCluster("CAPI Cluster"):::CAPI;
     MachineDeployment("MachineDeployment(s)"):::CAPI;
     DigitalOceanMachineTemplate("DigitalOceanMachineTemplate(s)"):::RancherInfrastructure;
@@ -80,25 +80,25 @@ graph LR;
     end
 
     %%%% MachineDeployment Children
-    subgraph On MachineDeployment Create (CAPI)
+    subgraph On MachineDeployment Create
     MachineSet("MachineSet(s)"):::CAPI;
     end
 
     %%%% MachineSet Children
-    subgraph On MachineSet Create (CAPI)
+    subgraph On MachineSet Create
     Machine("Machine(s)"):::CAPI;
     DigitalOceanMachine("DigitalOceanMachines(s)"):::RancherInfrastructure;
     RKEBootstrap("RKEBootstrap(s)"):::RancherBootstrap;
     end
 
     %%%% RKEBootstrap Children
-    subgraph On RKEBootstrap Create (Rancher Bootstrap)
+    subgraph On RKEBootstrap Create
       MachinePlanSecret("MachinePlanSecret(s)"):::RKEPlanner
       MachineBootstrapSecret("MachineBootstrapSecret(s)"):::RancherBootstrap
     end
 
     %%%% DigitalOceanMachine Children
-    subgraph On DigitalOceanMachine Create (Rancher Infrastructure)
+    subgraph On DigitalOceanMachine Create
     RancherMachineJob("Rancher Machine Job(s)"):::ProvisioningV2
     MachineStateSecret("MachineStateSecret(s)"):::ProvisioningV2
     end
@@ -236,26 +236,26 @@ graph LR;
     v1Cluster("provisioning.cattle.io Cluster"):::ProvisioningV2;
 
     %%%% v1.Cluster Children
-    subgraph On provisioning.cattle.io Create (Rancher)
+    subgraph On provisioning.cattle.io Create
     capiCluster("CAPI Cluster"):::CAPI;
     RKECluster("RKECluster"):::RancherBootstrap;
     RKEControlPlane("RKEControlPlane"):::RancherBootstrap;
     end
 
     %%%% Custom Node Registration
-    subgraph On Custom Node Registration (RKE Config Server)
+    subgraph On Custom Node Registration
     MachineRequestSecret("MachineRequestSecret(s)"):::RancherInfrastructure
     end
 
     %%% On Machine Registration Secret
-    subgraph On MachineRequestSecret Create (Rancher)
+    subgraph On MachineRequestSecret Create
     Machine("Machine(s)"):::CAPI;
     CustomMachine("CustomMachines(s)"):::RancherInfrastructure;
     RKEBootstrap("RKEBootstrap(s)"):::RancherBootstrap;
     end
 
     %%%% RKEBootstrap Children
-    subgraph On RKEBootstrap Create (Rancher Bootstrap)
+    subgraph On RKEBootstrap Create
       MachinePlanSecret("MachinePlanSecret(s)"):::RKEPlanner
       MachineBootstrapSecret("MachineBootstrapSecret(s)"):::RancherBootstrap
     end
