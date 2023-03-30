@@ -53,6 +53,60 @@ On running this command, you should see the following resources have been create
 >
 > If you were using Provisioning V2 without the help of the Rancher UI, these are exactly the resources you would need to create to automatically create all of the other resources.
 
+```mermaid
+graph LR;
+    classDef ProvisioningV2 fill:#645c5a;
+    classDef RancherBootstrap fill:#351c75;
+    classDef RancherInfrastructure fill:#04596c;
+    classDef CAPI fill:#89164f;
+
+    %% Parent Resources
+    DigitalOceanConfig("DigitalOceanConfig(s)"):::RancherInfrastructure;
+    v1Cluster:::ProvisioningV2;
+
+    subgraph v1.Cluster Children
+
+    capiCluster("Cluster"):::CAPI;
+    MachineDeployment("MachineDeployment(s)"):::CAPI;
+
+    DigitalOceanMachineTemplate("DigitalOceanMachineTemplate(s)"):::RancherInfrastructure;
+    
+    RKEBootstrapTemplate("RKEBootstrapTemplate(s)"):::RancherBootstrap;
+    RKECluster("RKECluster"):::RancherBootstrap;
+    RKEControlPlane("RKEControlPlane"):::RancherBootstrap;
+
+    end
+
+    subgraph MachineDeployment Children
+    MachineSet("MachineSet(s)"):::CAPI;
+    end
+
+    subgraph MachineSet Children
+    Machine("Machine(s)"):::CAPI;
+    DigitalOceanMachine("DigitalOceanMachines(s)"):::RancherInfrastructure;
+    RKEBootstrap("RKEBootstrap(s)"):::RancherBootstrap;
+    end
+
+    %% MachinePool to Cluster
+    DigitalOceanConfig-->v1Cluster;
+
+    %% v1.Cluster Children
+    v1Cluster-->capiCluster
+    v1Cluster-->DigitalOceanMachineTemplate;
+    v1Cluster-->MachineDeployment;
+    v1Cluster-->RKEBootstrapTemplate;
+    v1Cluster-->RKECluster;
+    v1Cluster-->RKEControlPlane;
+
+    %% MachineDeployment Children
+    MachineDeployment-->MachineSet
+    MachineSet-->Machine
+    MachineSet-->DigitalOceanMachine
+    MachineSet-->RKEBootstrap
+    DigitalOceanMachineTemplate-->DigitalOceanMachine
+    RKEBootstrapTemplate-->RKEBootstrap
+```
+
 Within the main `provisioning.cattle.io` API Group:
 - **Cluster (`<name>`)**: this is a **user-created object** that is the parent of **most** other objects listed here, except:
   - The `DigitalOceanConfig`, which is also created by the user
@@ -86,10 +140,6 @@ Rancher Bootstrap Provider resources, under the API Group `rke.cattle.io`:
 - **RKEControlPlane (`<name>`)**: this is the control plane that the Rancher Bootstrap Provider recognizes and registers. You should see in its annotations that it is owned by the `provisioning.cattle.io` Cluster listed above. You'll also see its `.spec` precisely matches the `.spec.rkeConfig` from the `provisioning.cattle.io` Cluster (since it was copied on creating the child object). This represents the user provided values on creating or modifying the cluster
 - **RKEBootstrapTemplate (`<name>-bootstrap-template`)**: this is the bootstrap configuration template that the Rancher Bootstrap Provider recognizes and registers. You should see in its annotations that it is owned by the `provisioning.cattle.io` Cluster listed above. It is referenced in the `.spec.bootstrap.configRef` field of a CAPI `MachineDeployment` or `MachineSet`
 - **RKEBootstrap (`<name>-bootstrap-template-<$RANDOM>`)**: this is the bootstrap configuration that the Rancher Bootstrap Provider recognizes and registers. Under `.status.dataSecretName`, it lists an ephemeral secret name that will contain a script that will be run on provisioned infrastructure; this script's purpose is to install `rancher/system-agent` onto the node as a [`systemd`](https://systemd.io/) Service (since this action is the same for all nodes, there's no other real `.spec` fields in this CR). It will disappear once the machine is no longer in one of the following stages: `Pending`, `Deleting`, `Failed`, or `Provisioning`. This resource is created by CAPI controllers per replica requested in the CAPI `MachineDeployment` or `MachineSet` based on the attached `RKEBootstrapTemplate`. It is referenced in the `.spec.bootstrap.configRef` field of a CAPI `Machine`; every CAPI `Machine` is expected to have its own unique `RKEBootstrap` tied to it
-
-
-
-As you can see in the output of 
 
 ### Example 2: Single-node Custom RKE2 / K3s cluster
 

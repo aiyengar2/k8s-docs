@@ -322,10 +322,20 @@ Since these are two CRDs implemented by the Rancher controllers, we will "hand-o
 On seeing the `RKEBootstrap` CR per machine, the `rke-bootstrap` controller that is tied to a `RegisterRKEBootstrapGeneratingHandler` call (currently under `pkg/controllers/provisioningv2/rke2/bootstrap`) will be triggered.
 
 This will create all the child Secrets and RBAC resources of the `RKEBootstrap` CR that are outlined in [the walkthrough](./walkthrough.md) **per `Machine`**, including:
-- The `bootstrap` Secret, which contains the script necessary to install `rancher/system-agent` onto the node. This secret is ephemeral and will be deleted once the `Machine` is provisioned
-- The `machine-plan`, which contains the expected plan (configuration) for `rancher/system-agent` process running on each machine. This secret will always exist for every `Machine` managed by your management cluster, is kept up-to-date by Rancher controllers watching the `RKEControlPlane` CR for the cluster, and is constantly watched by the `rancher/system-agent` running on the Node
+- The `bootstrap` Secret, which will be created with the `cloud-init` script necessary to install `rancher/system-agent` onto the node. This secret is ephemeral and will be deleted once the `Machine` is provisioned
+- The `machine-plan`, which will initially contain nothing within it
 
 ### Stage 5: RKE2 Planner fills in `machine-plan` Secret
+
+Once the `machine-plan` Secret has been created, the RKE2 Planner controllers will start to reconcile against the Secret.
+
+#### `plansecret` Controller
+
+On seeing the `machine-plan` Secret, the `plansecret` controller will convert the Secret into a `*plan.Node`
+
+#### `machinedrain` Controller
+
+contains the expected plan (configuration) for `rancher/system-agent` process running on each machine. This secret will always exist for every `Machine` managed by your management cluster, is kept up-to-date by Rancher controllers watching the `RKEControlPlane` CR for the cluster, and is constantly watched by the `rancher/system-agent` running on the Node
 
 ### Stage 6: Rancher Infrastructure Provider provisions and bootstraps machines
 
@@ -363,9 +373,9 @@ Then, Rancher creates a `ManagedChart` for the `rancher/system-agent` SUC `Plan`
 
 > **Note**: Why can't Provisioning V2 use `rancher/system-agent` to update itself?
 >
-> In theory, this is possible; however, `rancher/system-upgrade-controller` has better configuration options around executing upgrades to system components **across nodes** in a Kubernetes cluster, whereas `rancher/system-agent` can only configure how to execute an upgrade to system components **within a single node**. 
+> In theory, this is possible; however, `rancher/system-upgrade-controller` has better configuration options around executing upgrades to system components **across nodes** in a Kubernetes cluster, whereas `rancher/system-agent` only considers the node it is running on.
 >
-> For example, with `rancher/system-upgrade-controller` you can choose to execute the upgrade of `rancher/system-agent` as a **rolling upgrade** across your cluster with a single Plan; on the other hand, performing this same upgrade with `rancher/system-agent` would require you to write logic to orchestrate your desired upgrade strategy, since it isn't aware of the "global view" of other nodes existing in the same cluster.
+> For example, with `rancher/system-upgrade-controller` you can choose to execute the upgrade of `rancher/system-agent` as a **rolling upgrade** across your cluster with a single Plan; this wouldn't be possible with `rancher/system-agent`.
 
 ## Provisioning V2 Workflow For Special Clusters
 
