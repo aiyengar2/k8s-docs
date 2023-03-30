@@ -108,7 +108,7 @@ graph LR;
     %% Relationships
 
     %%%% MachinePool to Cluster
-    DigitalOceanConfig-->v1Cluster;
+    v1Cluster-.->DigitalOceanConfig;
 
     %%%% v1.Cluster Children
     v1Cluster-->capiCluster
@@ -117,9 +117,6 @@ graph LR;
     v1Cluster-->RKEBootstrapTemplate;
     v1Cluster-->RKECluster;
     v1Cluster-->RKEControlPlane;
-    
-    %%%% RKE Cluster References
-    RKECluster-.->RKEControlPlane
 
     %%%% CAPI Cluster References
     capiCluster-.->RKECluster
@@ -203,6 +200,94 @@ kubectl get -n fleet-default $(kubectl api-resources -o'name' | grep "${APIGROUP
 ```
 
 On running this command, you should see the following resources have been created per API group (where `<name>` is the name you provided to create the cluster).
+
+```mermaid
+graph LR;
+    %% CSS Styling
+    classDef ProvisioningV2 fill:#645c5a;
+    classDef RancherBootstrap fill:#351c75;
+    classDef RancherInfrastructure fill:#04596c;
+    classDef CAPI fill:#89164f;
+    classDef RKEPlanner fill:#8a871e;
+
+    %% Resources
+
+    %%%% Parent Resources
+    v1Cluster("provisioning.cattle.io Cluster"):::ProvisioningV2;
+
+    %%%% v1.Cluster Children
+    subgraph On provisioning.cattle.io Create
+    capiCluster("CAPI Cluster"):::CAPI;
+    RKECluster("RKECluster"):::RancherBootstrap;
+    RKEControlPlane("RKEControlPlane"):::RancherBootstrap;
+    end
+
+    %%%% Custom Node Registration
+    subgraph On Custom Node Registration
+    MachineRegistrationSecret("MachineRegistrationSecret(s)"):::RancherInfrastructure
+    end
+
+    %%% On Machine Registration Secret
+    subgraph On MachineRegistrationSecret Create
+    Machine("Machine(s)"):::CAPI;
+    CustomMachine("CustomMachines(s)"):::RancherInfrastructure;
+    RKEBootstrap("RKEBootstrap(s)"):::RancherBootstrap;
+    end
+
+    %%%% RKEBootstrap Children
+    subgraph On RKEBootstrap Create
+      MachinePlanSecret("MachinePlanSecret(s)"):::RKEPlanner
+      MachineBootstrapSecret("MachineBootstrapSecret(s)"):::RancherBootstrap
+    end
+
+    RKEPlannerController("RKE Planner Controller"):::RKEPlanner
+    PhysicalServer("Physical Server(s)")
+
+    %% Relationships
+
+    %%%% v1.Cluster Children
+    v1Cluster-->capiCluster
+    v1Cluster-->RKECluster;
+    v1Cluster-->RKEControlPlane;
+
+    %%%% CAPI Cluster References
+    capiCluster-.->RKECluster
+    capiCluster-.->RKEControlPlane
+
+    %%%% On MachineRegistrationSecret Create
+    MachineRegistrationSecret-->Machine
+    MachineRegistrationSecret-->CustomMachine
+    MachineRegistrationSecret-->RKEBootstrap
+
+    %%%% CustomMachine References
+    CustomMachine-.->PhysicalServer
+
+    %%%% Machine and RKEBootstrapTemplate
+    Machine-.->RKEBootstrap
+
+    %%%% Secrets
+    RKEBootstrap--Immediately Deleted-->MachineBootstrapSecret
+    RKEBootstrap--Empty On Create-->MachinePlanSecret
+    RKEControlPlane-->RKEPlannerController
+    RKEPlannerController--Filled In On Updates-->MachinePlanSecret
+    MachinePlanSecret-->PhysicalServer
+```
+
+```mermaid
+graph TD;
+    %% CSS Styling
+    classDef ProvisioningV2 fill:#645c5a;
+    classDef RancherBootstrap fill:#351c75;
+    classDef RancherInfrastructure fill:#04596c;
+    classDef CAPI fill:#89164f;
+    classDef RKEPlanner fill:#8a871e;
+
+    ProvisioningV2("Provisioning V2"):::ProvisioningV2
+    RancherBootstrap("Rancher Bootstrap Provider"):::RancherBootstrap
+    RancherInfrastructure("Rancher Infrastructure Provider"):::RancherInfrastructure
+    CAPI("Cluster API (CAPI)"):::CAPI
+    RKEPlanner("RKE Planner"):::RKEPlanner
+```
 
 Within the main `provisioning.cattle.io` API Group:
 - **Cluster (`<name>`)**: this is a **user-created object** that is the parent of **all** other objects listed here
