@@ -100,6 +100,7 @@ graph LR;
     %%%% DigitalOceanMachine Children
     subgraph On DigitalOceanMachine Create
     RancherMachineJob("Rancher Machine Job(s)"):::ProvisioningV2
+    MachineStateSecret("MachineStateSecret(s)"):::ProvisioningV2
     end
 
     RKEPlannerController("RKE Planner Controller"):::RKEPlanner
@@ -143,6 +144,9 @@ graph LR;
     %%%% DigitalOceanMachine Children
     DigitalOceanMachine-->RancherMachineJob
     RancherMachineJob-->PhysicalServer
+    DigitalOceanMachine--Empty On Create-->MachineStateSecret
+
+    RancherMachineJob--Filled In On Successful Provision-->MachineStateSecret
 
     %%%% Secrets
     RKEBootstrap-->MachineBootstrapSecret
@@ -341,6 +345,8 @@ On seeing a Secret of this type get created, the Provisioning V2 controllers wil
 - A dummy `RKEBootstrap` that is referenced by the CAPI `Machine`
 
 On running the same command from above, you should see that these resources were created and, since the Rancher controllers will always mark a `CustomMachine`'s status as immediately `Ready`, you should see that the cluster successfully finishes provisioning momentarily.
+
+## After Provisioning The Cluster
 
 ## Utility Functions
 
