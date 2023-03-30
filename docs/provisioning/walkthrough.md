@@ -99,7 +99,7 @@ graph LR;
 
     %%%% DigitalOceanMachine Children
     subgraph On DigitalOceanMachine Create
-    RancherMachineJob("Rancher Machine Job(s)")
+    RancherMachineJob("Rancher Machine Job(s)"):::ProvisioningV2
     end
 
     RKEPlannerController("RKE Planner Controller"):::RKEPlanner
