@@ -325,7 +325,9 @@ This will create all the child Secrets and RBAC resources of the `RKEBootstrap` 
 - The `bootstrap` Secret, which contains the script necessary to install `rancher/system-agent` onto the node. This secret is ephemeral and will be deleted once the `Machine` is provisioned
 - The `machine-plan`, which contains the expected plan (configuration) for `rancher/system-agent` process running on each machine. This secret will always exist for every `Machine` managed by your management cluster, is kept up-to-date by Rancher controllers watching the `RKEControlPlane` CR for the cluster, and is constantly watched by the `rancher/system-agent` running on the Node
 
-### Stage 5: Rancher Infrastructure Provider provisions and bootstraps machines
+### Stage 5: RKE2 Planner fills in `machine-plan` Secret
+
+### Stage 6: Rancher Infrastructure Provider provisions and bootstraps machines
 
 On seeing the creation of the `<Infrastructure>Machine`, Rancher will translate the `.spec` of the `<Infrastructure>Machine` into arguments for a [`rancher/machine`](https://github.com/rancher/machine) Job, [as described above](#how-does-provisioning-v2-use-ranchermachine-to-provision-infrastructure).
 
@@ -340,6 +342,30 @@ On completion of this Job, a `Machine` will have been **provisioned and bootstra
 As discussed [before](#how-does-provisioning-v2-support-sshing-into-machines), the `rancher/machine` Job will also end up filling in the empty `machine-state` Secret, leaving behind the information necessary for Rancher to SSH into nodes after-the-fact.
 
 Also, as discussed [before](#ranchers-system-agent-bootstrap-provider), a bootstrapped machine will have `rancher/system-agent` running on the node as a systemd Service, which will run the plan created for this node and stored in the `machine-plan` Secret in the previous stage.
+
+### Stage 7: `rancher/system-agent` reconciles Plan from `machine-plan` Secret and updates Secret
+
+### Stage 8: RKE2 Planner updates `RKECluster` Conditions, which updates CAPI `Cluster`
+
+### Stage 9: Rancher installs add-on charts
+
+Rancher installs `fleet-agent` onto the downstream cluster, which follows the ["Manager-Initiated" Registration Process](https://rancher.github.io/fleet/cluster-overview/#manager-initiated-registration) to register the `fleet-agent` with the main `fleet` instance running in the management cluster.
+
+> **Note**: Why does Provisioning V2 need to create a `fleet-agent`?
+>
+> Fleet is used as the underlying deployment mechanism for `ManagedCharts`, a type of CR that represents a chart that needs to be deployed and kept up-to-date on a downstream cluster by Fleet.
+>
+> It should be noted that Fleet will not watch the resources deployed within this chart but will override changes to deployed resources from this chart on an upgrade.
+
+Once the downstream cluster has Fleet installed, Rancher creates a `ManagedChart` for `rancher/system-upgrade-controller` (SUC), which ensures that the `rancher/syste-=upgrade-controller` chart is installed onto the downstream cluster.
+
+Then, Rancher creates a `ManagedChart` for the `rancher/system-agent` SUC `Plan`, which will be picked up by the `rancher/system-upgrade-controller` running in the cluster. This will ensure `rancher/system-agent` is kept up-to-date on all nodes, such as in the case of a Rancher upgrade with a new `rancher/system-agent` version.
+
+> **Note**: Why can't Provisioning V2 use `rancher/system-agent` to update itself?
+>
+> In theory, this is possible; however, `rancher/system-upgrade-controller` has better configuration options around executing upgrades to system components **across nodes** in a Kubernetes cluster, whereas `rancher/system-agent` can only configure how to execute an upgrade to system components **within a single node**. 
+>
+> For example, with `rancher/system-upgrade-controller` you can choose to execute the upgrade of `rancher/system-agent` as a **rolling upgrade** across your cluster with a single Plan; on the other hand, performing this same upgrade with `rancher/system-agent` would require you to write logic to orchestrate your desired upgrade strategy, since it isn't aware of the "global view" of other nodes existing in the same cluster.
 
 ## Provisioning V2 Workflow For Special Clusters
 
