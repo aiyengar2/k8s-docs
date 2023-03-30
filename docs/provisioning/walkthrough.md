@@ -156,7 +156,7 @@ graph LR;
 ```mermaid
 graph TD;
     %% CSS Styling
-    classDef ProvisioningV2 fill:#645c5a;
+    classDef ProvisioningV2 fill:#000000;
     classDef RancherBootstrap fill:#351c75;
     classDef RancherInfrastructure fill:#04596c;
     classDef CAPI fill:#89164f;
