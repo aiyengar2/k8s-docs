@@ -153,6 +153,22 @@ graph LR;
     MachinePlanSecret-->PhysicalServer
 ```
 
+```mermaid
+graph TD;
+    %% CSS Styling
+    classDef ProvisioningV2 fill:#645c5a;
+    classDef RancherBootstrap fill:#351c75;
+    classDef RancherInfrastructure fill:#04596c;
+    classDef CAPI fill:#89164f;
+    classDef RKEPlanner fill:#8a871e;
+
+    ProvisioningV2("Provisioning V2"):::ProvisioningV2
+    RancherBootstrap("Rancher Bootstrap Provider"):::RancherBootstrap
+    RancherInfrastructure("Rancher Infrastructure Provider"):::RancherInfrastructure
+    CAPI("Cluster API (CAPI)"):::CAPI
+    RKEPlanner("RKE Planner"):::RKEPlanner
+```
+
 Within the main `provisioning.cattle.io` API Group:
 - **Cluster (`<name>`)**: this is a **user-created object** that is the parent of **most** other objects listed here, except:
   - The `DigitalOceanConfig`, which is also created by the user
