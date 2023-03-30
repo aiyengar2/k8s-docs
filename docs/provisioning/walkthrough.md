@@ -55,56 +55,105 @@ On running this command, you should see the following resources have been create
 
 ```mermaid
 graph LR;
+    %% CSS Styling
+
     classDef ProvisioningV2 fill:#645c5a;
     classDef RancherBootstrap fill:#351c75;
     classDef RancherInfrastructure fill:#04596c;
     classDef CAPI fill:#89164f;
+    classDef RKEPlanner fill:#8a871e;
 
-    %% Parent Resources
+    %% Resources
+
+    %%%% Parent Resources
     DigitalOceanConfig("DigitalOceanConfig(s)"):::RancherInfrastructure;
-    v1Cluster:::ProvisioningV2;
+    v1Cluster("provisioning.cattle.io Cluster"):::ProvisioningV2;
 
-    subgraph v1.Cluster Children
-
-    capiCluster("Cluster"):::CAPI;
+    %%%% v1.Cluster Children
+    subgraph On provisioning.cattle.io Create
+    capiCluster("CAPI Cluster"):::CAPI;
     MachineDeployment("MachineDeployment(s)"):::CAPI;
-
     DigitalOceanMachineTemplate("DigitalOceanMachineTemplate(s)"):::RancherInfrastructure;
-    
     RKEBootstrapTemplate("RKEBootstrapTemplate(s)"):::RancherBootstrap;
     RKECluster("RKECluster"):::RancherBootstrap;
     RKEControlPlane("RKEControlPlane"):::RancherBootstrap;
-
     end
 
-    subgraph MachineDeployment Children
+    %%%% MachineDeployment Children
+    subgraph On MachineDeployment Create
     MachineSet("MachineSet(s)"):::CAPI;
     end
 
-    subgraph MachineSet Children
+    %%%% MachineSet Children
+    subgraph On MachineSet Create
     Machine("Machine(s)"):::CAPI;
     DigitalOceanMachine("DigitalOceanMachines(s)"):::RancherInfrastructure;
     RKEBootstrap("RKEBootstrap(s)"):::RancherBootstrap;
     end
 
-    %% MachinePool to Cluster
+    %%%% RKEBootstrap Children
+    subgraph On RKEBootstrap Create
+      MachinePlanSecret("MachinePlanSecret(s)"):::RKEPlanner
+      MachineBootstrapSecret("MachineBootstrapSecret(s)"):::RancherBootstrap
+    end
+
+    %%%% DigitalOceanMachine Children
+    subgraph On DigitalOceanMachine Create
+    RancherMachineJob("Rancher Machine Job(s)")
+    end
+
+    RKEPlannerController("RKE Planner Controller"):::RKEPlanner
+    PhysicalServer("Physical Server(s)")
+
+    %% Relationships
+
+    %%%% MachinePool to Cluster
     DigitalOceanConfig-->v1Cluster;
 
-    %% v1.Cluster Children
+    %%%% v1.Cluster Children
     v1Cluster-->capiCluster
     v1Cluster-->DigitalOceanMachineTemplate;
     v1Cluster-->MachineDeployment;
     v1Cluster-->RKEBootstrapTemplate;
     v1Cluster-->RKECluster;
     v1Cluster-->RKEControlPlane;
+    
+    %%%% RKE Cluster References
+    RKECluster-.->RKEControlPlane
 
-    %% MachineDeployment Children
+    %%%% CAPI Cluster References
+    capiCluster-.->RKECluster
+    capiCluster-.->RKEControlPlane
+
+    %%%% MachineDeployment Children
     MachineDeployment-->MachineSet
+    MachineDeployment-.->DigitalOceanMachineTemplate
+    MachineDeployment-.->RKEBootstrapTemplate
+    
+    %%%% MachineSet 
     MachineSet-->Machine
     MachineSet-->DigitalOceanMachine
     MachineSet-->RKEBootstrap
+
+    %%%% Machine and DigitalOceanMachineTemplate
+    Machine-.->DigitalOceanMachine
     DigitalOceanMachineTemplate-->DigitalOceanMachine
+
+    %%%% Machine and RKEBootstrapTemplate
+    Machine-.->RKEBootstrap
     RKEBootstrapTemplate-->RKEBootstrap
+
+    %%%% DigitalOceanMachine Children
+    DigitalOceanMachine-->RancherMachineJob
+    RancherMachineJob-->PhysicalServer
+
+    %%%% Secrets
+    RKEBootstrap-->MachineBootstrapSecret
+    MachineBootstrapSecret-->RancherMachineJob
+    RKEBootstrap--Empty On Create-->MachinePlanSecret
+    RKEControlPlane-->RKEPlannerController
+    RKEPlannerController--Filled In On Updates-->MachinePlanSecret
+    MachinePlanSecret-->PhysicalServer
 ```
 
 Within the main `provisioning.cattle.io` API Group:
@@ -122,7 +171,7 @@ CAPI resources, identified by the API Group `cluster.x-k8s.io`:
 - **Cluster (`<name>`)**: this is the core cluster that CAPI recognizes and registers. You should see in its annotations that it is owned by the `provisioning.cattle.io` Cluster listed above. You'll also see its `.spec.controlPlaneRef` and `.spec.infrastructureRef` are tied to the underlying Rancher Bootstrap Provider CRs, `RKEControlPlane` and `RKECluster`
 - **MachineDeployment (`<name>-<machinePool>`)**: this is the core machine deployment that CAPI recognizes and registers; you should see one of these per Machine Pool that you had defined. You should see in its annotations that it is owned by the `provisioning.cattle.io` Cluster listed above. You'll also see its `.spec.infrastructureRef` is tied to the underlying `DigitalOceanMachineTemplate` in the Rancher Infrastructure Provider CRs and its `.spec.bootstrap.configRef` is tied to the underlying `RKEBootstrapTemplate` in the Rancher Bootstrap Provider CRs
 - **MachineSet (`<name>-<machinePool>-<$RANDOM>`)**: this is the underlying component the `MachineDeployment` above creates. Nothing specific to see here
-- **Machine (`<name>-<machinePool>-<$RANDOM>-<$RANDOM>`)**: this is the underlying component the `MachineSet` above creates. Nothing specific to see here, except the fact that its `.spec.infrastructureRef` is tied to the underlying `DigitalOceanMachine` in the Rancher Infrastructure Provider CRs and the underlying `RKEBootstrap` in the Rancher Bootstrap Provider CRs rather than the `DigitalOceanMachineTemplate` or `RKEBootstrapTemplate`, respectively
+- **Machine (`<name>-<machinePool>-<$RANDOM>-<$RANDOM>`)**: this is the underlying component the `MachineSet` above creates. Nothing specific to see here, except the fact that its `.spec.infrastructureRef` is tied to the underlying `DigitalOceanMachine` in the Rancher Infrastructure Provider CRs its `.spec.bootstrap.ConfigRef` is tied to the underlying `RKEBootstrap` in the Rancher Bootstrap Provider CRs rather than the `DigitalOceanMachineTemplate` or `RKEBootstrapTemplate`, respectively
 
 Rancher Infrastructure Provider resources, under the API Group `rke-machine.cattle.io`:
 - **DigitalOceanConfig (`nc-<name>-<machinePool>-<$RANDOM>`)**: this is a **user-created object** that identifies the DigitalOcean node configuration (which is why it is prefixed with `nc-`) that should be used for a specific Machine Pool listed in the `provisioning.cattle.io` Cluster. It is referenced in the `.spec.rkeConfig.machinePools[*].machineConfigRef` field of the `provisioning.cattle.io` Cluster; if you created multiple Machine Pools to provision your cluster, you should see exactly that many `DigitialOceanConfig`s
