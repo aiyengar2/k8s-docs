@@ -83,9 +83,9 @@ graph TD
     MachineProvider("Machine Provider")
     ControlPlaneProvider("Control Plane Provider")
 
-    InfrastructureCluster("&ltInfrastructure&gtClusters")
+    InfrastructureCluster("&ltInfrastructure&gtCluster")
     DistributionBootstrap("&ltDistribution&gtBootstrap")
-    DistributionBootstrapTemplate("&ltDistribution&gtBootstrapTemplates")
+    DistributionBootstrapTemplate("&ltDistribution&gtBootstrapTemplate")
     InfrastructureMachine("&ltInfrastructure&gtMachine")
     InfrastructureMachineTemplate("&ltInfrastructure&gtMachineTemplate")
     DistributionControlPlane("&ltDistribution&gtControlPlane")
