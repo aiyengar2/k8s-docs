@@ -1,6 +1,10 @@
 # What is Cluster API (CAPI)?
 
-[Cluster API (CAPI)](https://cluster-api.sigs.k8s.io/introduction.html) is a declarative API for managing Kubernetes clusters.
+[Cluster API (CAPI)](https://cluster-api.sigs.k8s.io/introduction.html) is a declarative API for provisioning and managing Kubernetes clusters.
+
+Once CAPI is installed, users are expected to use [`clusterctl`](https://cluster-api.sigs.k8s.io/clusterctl/overview.html), a command line tool that supports commands like:
+- `clusterctl generate cluster` to create the Kubernetes manifest that defines a CAPI Cluster
+- `clusterctl get kubeconfig` to get the `KUBECONFIG` of a CAPI-provisioned cluster to be able to communicate with it
 
 ## Installing CAPI
 
@@ -8,10 +12,12 @@ To use CAPI, a user must install the **CAPI controllers & CRDs** and one or more
 
 Once CAPI is installed, to create a cluster managed by CAPI (also known as a **downstream** cluster), a user will have to create a number of resources at the same time in the **local / management** cluster, including:
 - A `Machine`, which identifies a `<Infrastructure>Machine` and `<Distribution>Bootstrap` CR that implements it
-- A `MachineDeployment` / `MachineSet` similarly references a `<Infrastructure>MachineTemplate` and `<Distribution>BootstrapTemplate` CRs to create a set of `Machines`
-  - `MachineDeployment` : `MachineSet` : `Machine` has the same relationship as `Deployment` : `ReplicaSet` : `Pod`
+    - A `MachineDeployment` / `MachineSet` similarly references a `<Infrastructure>MachineTemplate` and `<Distribution>BootstrapTemplate` CRs to create a set of `Machines`
+    - `MachineDeployment` : `MachineSet` : `Machine` has the same relationship as `Deployment` : `ReplicaSet` : `Pod`
 - A `Cluster`, which identifies a `<Distribution>Cluster` and `<Distribution>ControlPlane` CR that implements it
 - `MachineHealthCheck`s, which identify periodic actions that need to be executed on `Machine`s to verify they are healthy. On a failed `MachineHealthCheck`, a `Machine` that is part of a `MachineSet` gets deleted and replaced with a fresh `Machine`
+
+The manifest containing these resources is what is normally produced by running `clusterctl generate cluster` with the appropriate command-line arguments.
 
 ```mermaid
 graph TD
@@ -22,7 +28,6 @@ graph TD
     MachineA1("Machine A1")
     MachineA2("Machine A2")
     MachineA3("Machine A3")
-    MachineSetDescriptionA("Represents a set / pool of Machines in the Cluster")
     end
     end
     subgraph Machine Deployment B
@@ -30,7 +35,6 @@ graph TD
     MachineB1("Machine B1")
     MachineB2("Machine B2")
     MachineB3("Machine B3")
-    MachineSetDescriptionB("Represents a set / pool of Machines in the Cluster")
     end
 
     end
