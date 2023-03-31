@@ -71,10 +71,10 @@ graph TD
     DistributionControlPlane("&ltDistribution&gtControlPlane")
     end
 
-    CAPIControllers-->ClusterProvider
-    CAPIControllers-->BootstrapProvider
-    CAPIControllers-->MachineProvider
-    CAPIControllers-->ControlPlaneProvider
+    CAPIControllers--On Cluster Create-->ClusterProvider
+    CAPIControllers--Before Provisioning Machines-->BootstrapProvider
+    CAPIControllers--On Provisioning Machines-->MachineProvider
+    CAPIControllers--On Ready Machines-->ControlPlaneProvider
     
     ClusterProvider-.->InfrastructureCluster
     BootstrapProvider-.->DistributionBootstrap
