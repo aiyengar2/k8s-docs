@@ -138,3 +138,6 @@ graph TD
     DistributionControlPlane-.->KubeConfig
 ```
 
+## Next Up
+
+Next, we will do a deep dive into each of the [CAPI Providers](./01_capi_providers.md) that CAPI expects to be implemented by a third-party (i.e. Rancher in Provisioning V2)!
