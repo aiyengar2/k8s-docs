@@ -9,7 +9,7 @@ Once CAPI is installed, users are expected to use [`clusterctl`](https://cluster
 
 ## Installing CAPI
 
-To use CAPI, a user must install the **CAPI controllers & CRDs** and one or more **CAPI "Provider" controllers & CRDs** onto a single cluster known as the **management / local** cluster.
+To use CAPI, a user must install the **CAPI controllers & CRDs** and one or more **CAPI "Provider" controllers & CRDs** onto a single cluster known as the **local / management** cluster.
 
 This is generally achieved by running `clusterctl init`.
 
