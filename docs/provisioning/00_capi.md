@@ -90,6 +90,7 @@ graph TD
     InfrastructureMachineTemplate("&ltInfrastructure&gtMachineTemplate")
     DistributionControlPlane("&ltDistribution&gtControlPlane")
 
+    PhysicalServer("Physical Server")
     MachineBootstrapSecret("Machine Bootstrap Secret")
     end
 
@@ -102,7 +103,9 @@ graph TD
     BootstrapProvider-.->DistributionBootstrap
     BootstrapProvider-.->DistributionBootstrapTemplate
     DistributionBootstrap-.->MachineBootstrapSecret
+    MachineBootstrapSecret-.->PhysicalServer
     MachineProvider-.->InfrastructureMachine
+    InfrastructureMachine-.->PhysicalServer
     MachineProvider-.->InfrastructureMachineTemplate
     ControlPlaneProvider-.->DistributionControlPlane
 ```
