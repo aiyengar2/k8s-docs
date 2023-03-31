@@ -17,29 +17,29 @@ Once CAPI is installed, to create a cluster managed by CAPI (also known as a **d
 graph TD
     subgraph CAPI Cluster
     direction BT
-    subgraph MachineDeploymentA
-    subgraph MachineSetA
-    MachineA1
-    MachineA2
-    MachineA3
+    subgraph Machine Deployment A
+    subgraph Machine Set A
+    MachineA1("Machine A1")
+    MachineA2("Machine A2")
+    MachineA3("Machine A3")
     end
     end
-    subgraph MachineDeploymentB
-    subgraph MachineSetB
-    MachineB1
-    MachineB2
-    MachineB3
+    subgraph Machine Deployment B
+    subgraph MachineSet B
+    MachineB1("Machine B1")
+    MachineB2("Machine B2")
+    MachineB3("Machine B3")
     end
     end
-    MachineHealthCheck1
+    MachineHealthCheck("MachineHealthCheck(s)")
     end
 
-    MachineHealthCheck1-->MachineA1
-    MachineHealthCheck1-->MachineA2
-    MachineHealthCheck1-->MachineA3
-    MachineHealthCheck1-->MachineB1
-    MachineHealthCheck1-->MachineB2
-    MachineHealthCheck1-->MachineB3
+    MachineHealthCheck-->MachineA1
+    MachineHealthCheck-->MachineA2
+    MachineHealthCheck-->MachineA3
+    MachineHealthCheck-->MachineB1
+    MachineHealthCheck-->MachineB2
+    MachineHealthCheck-->MachineB3
 ```
 
 Once these resources are created, it's expected that the CAPI "Provider" controllers will do the "real" work to provision the cluster.
