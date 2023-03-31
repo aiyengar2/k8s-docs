@@ -53,9 +53,15 @@ The bootstrap script is typically run on the provisioned machine by providing th
 
 ## Control Plane Provider
 
-A [Control Plane Provider](https://cluster-api.sigs.k8s.io/developer/providers/machine-infrastructure.html)) is the **fourth** provider that gets called by the series of hand-offs from CAPI.
+A [Control Plane Provider](https://cluster-api.sigs.k8s.io/developer/architecture/controllers/control-plane.html) is the **fourth** provider that gets called by the series of hand-offs from CAPI.
 
-A control plane provider actually handles [installing Kubernetes components](../controllers/00_introduction.md#what-does-it-mean-to-install-kubernetes-onto-a-set-of-servers) onto a given node / server . It's also responsible for generating cluster certificates if they don't exist, initializing the controlplane for a fresh cluster, and joining nodes of different roles onto an existing cluster's controlplane.
+A control plane provider has three jobs:
+- Manages the set of `Machine`s designated as control plane nodes by installing the controlplane components (`etcd`, `kube-api-server`, `kube-controller-manager`, `kube-scheduler`) and other optional services (`cloud-controller-manager`, `coredns` / `kubedns`, `kube-proxy`, etc.) 
+- Keeping track of the state of the controlplane across all nodes that comprise it
+- Creating / managing a `KUBECONFIG` that can be used to access the cluster's Kubernetes API
+
+
+actually handles [configuring the installed Kubernetes components](../controllers/00_introduction.md#what-does-it-mean-to-install-kubernetes-onto-a-set-of-servers) onto a given node / server . It's also responsible for generating cluster certificates if they don't exist, initializing the controlplane for a fresh cluster, and joining nodes of different roles onto an existing cluster's controlplane.
 
 A bootstrap provider actually handles [installing Kubernetes components](../controllers/00_introduction.md#what-does-it-mean-to-install-kubernetes-onto-a-set-of-servers) onto a given node / server for a given **Kubernetes distribution (i.e. kubeAdm, RKE, k3s/RKE2)**. It's also responsible for generating cluster certificates if they don't exist, initializing the controlplane for a fresh cluster, and joining nodes of different roles onto an existing cluster's controlplane.
 
