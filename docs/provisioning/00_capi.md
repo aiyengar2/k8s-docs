@@ -62,7 +62,7 @@ graph TD
 >
 > To clarify, when you modify one of the mutable resources listed above (`MachineDeployment`, `<Distribution>BootstrapTemplate`, and `<Infrastructure>MachineTemplate`), all immutable resources that the spawned **prior to the mutation** are left unaffected by the change; instead, a new set of those same immutable resources (i.e. a new `Machine`, `<Distribution>Bootstrap`, and `<Infrastructure>Machine`) are spawned based on the new configuration.
 >
-> Once the new `Machine` is Ready, CAPI will then proceed to get rid of the previous immutable resources (i.e. the old `Machine`, `<Distribution>Bootstrap`, and `<Infrastructure>Machine`) since they are no longer required.
+> Once the new `Machine` is Ready, CAPI will then proceed to get rid of the previous set of immutable resources (i.e. the old `Machine`, `<Distribution>Bootstrap`, and `<Infrastructure>Machine`) since they are no longer required.
 
 The manifest containing these resources is what is normally produced by running `clusterctl generate cluster` with the appropriate command-line arguments.
 
