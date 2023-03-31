@@ -76,7 +76,7 @@ Once these steps have been taken, a user can run `clusterctl get kubeconfig` to 
 
 ```mermaid
 graph TD
-    CAPIControllers("CAPI Controllers")
+    CAPIControllers("CAPI Controllers\n (copies fields back to Cluster and Machine CRs)")
 
     subgraph Providers
     ClusterProvider("Cluster Provider")
@@ -94,9 +94,10 @@ graph TD
     DistributionControlPlane("&ltDistribution&gtControlPlane")
     end
     
-    subgraph Resources
+    subgraph Physical Resources
+    ClusterInfrastructure("Cluster-Level Infrastructure\n(LoadBalancers, NetworkSecurityGroups, etc.)")
     PhysicalServer("Physical Server")
-    MachineBootstrapSecret("Machine Bootstrap Secret")
+    MachineBootstrapSecret("Machine Bootstrap Secret\n(Bash script)")
     KubeConfig("KUBECONFIG")
     end
 
@@ -106,6 +107,7 @@ graph TD
     CAPIControllers--On Machines Ready-->ControlPlaneProvider
     
     ClusterProvider-.->InfrastructureCluster
+    InfrastructureCluster-.-> ClusterInfrastructure
     BootstrapProvider-.->DistributionBootstrap
     BootstrapProvider-.->DistributionBootstrapTemplate
     DistributionBootstrap-.->MachineBootstrapSecret
