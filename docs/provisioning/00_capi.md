@@ -42,18 +42,6 @@ graph TD
     MachineHealthCheck1-->MachineB3
 ```
 
-```mermaid
-graph TD
-    subgraph Provider References
-    InfrastructureCluster("&ltInfrastructure&gtClusters")
-    DistributionBootstrap("&ltDistribution&gtBootstrap")
-    DistributionBootstrapTemplate("&ltDistribution&gtBootstrapTemplates")
-    InfrastructureMachine("&ltInfrastructure&gtMachine")
-    InfrastructureMachineTemplate("&ltInfrastructure&gtMachineTemplate")
-    DistributionControlPlane("&ltDistribution&gtControlPlane")
-    end
-```
-
 Once these resources are created, it's expected that the CAPI "Provider" controllers will do the "real" work to provision the cluster.
 
 ## What is a CAPI Provider?
