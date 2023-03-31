@@ -10,8 +10,6 @@ Here are some of the high-level differences:
 
 ### Bootstrapping v.s. Managing `Machine`s
 
-One of the biggest differences is that most upstream CAPI providers only support **provisioning + bootstrapping** Machines, whereas Rancher supports **provisioning + managing** Machines via `rancher/system-agent`.
-
 > **Note**: What is "bootstrapping" a machine?
 >
 > The term "bootstrapping" comes from the phrase "to pull oneself by one's bootstraps". 
