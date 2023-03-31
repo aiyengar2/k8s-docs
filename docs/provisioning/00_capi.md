@@ -22,8 +22,6 @@ Once CAPI is installed, to create a cluster managed by CAPI (also known as a **d
 
 > **Note**: On a failed `MachineHealthCheck`, a `Machine` that is part of a `MachineSet` gets deleted and replaced with a fresh `Machine`
 
-The manifest containing these resources is what is normally produced by running `clusterctl generate cluster` with the appropriate command-line arguments.
-
 ```mermaid
 graph TD
     subgraph CAPI Cluster
@@ -53,6 +51,8 @@ graph TD
     MachineHealthCheck-->MachineB2
     MachineHealthCheck-->MachineB3
 ```
+
+The manifest containing these resources is what is normally produced by running `clusterctl generate cluster` with the appropriate command-line arguments.
 
 Once these resources are created, it's expected that the CAPI "Provider" controllers will do the "real" work to provision the cluster.
 
