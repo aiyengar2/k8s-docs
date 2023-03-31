@@ -12,7 +12,7 @@ Rancher's Provisioning V2 is **almost fully compliant** with upstream CAPI's **m
 
 Upstream CAPI only supports **bootstrapping** a Machine, a **one-time** action on the machine to start the Kubernetes internal components with a specific configuration of each component.
 
-> **Note**: What is "bootstrapping"?
+> **Note**: Why is this called "bootstrapping"?
 >
 > The term "bootstrapping" comes from the phrase "to pull oneself by one's bootstraps". 
 >
