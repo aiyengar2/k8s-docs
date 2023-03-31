@@ -33,11 +33,11 @@ graph LR
     end
     MachineHealthCheck
 
-    CAPI Controllers
-    AWS Cluster Infrastructure Provider Controllers
-    KubeAdm Bootstrap Provider Controllers
-    AWS Machine Provider Controllers
-    KubeAdm Control Plane Provider Controllers
+    CAPIController("CAPI Controllers")
+    AWSClusterController("AWS Cluster Infrastructure Provider Controllers")
+    KubeAdmBootstrapController("KubeAdm Bootstrap Provider Controllers")
+    AWSMachineController("AWS Machine Provider Controllers")
+    ControlPlaneController("KubeAdm Control Plane Provider Controllers")
     end
 
     MachineHealthCheck-->MachineA1
