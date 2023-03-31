@@ -63,10 +63,12 @@ graph TD
     MachineProvider("Machine Provider")
     ControlPlaneProvider("Control Plane Provider")
 
-    ClusterProviderDescription("Manages &ltInfrastructure&gtClusters")
-    BootstrapProviderDescription("Manages &ltDistribution&gtBootstrap and &ltDistribution&gtBootstrapTemplates")
-    MachineProviderDescription("Manages &ltInfrastructure&gtMachine and &ltInfrastructure&gtMachineTemplate")
-    ControlPlaneProviderDescription("Manages &ltDistribution&gtControlPlane")
+    InfrastructureCluster("&ltInfrastructure&gtClusters")
+    DistributionBootstrap("&ltDistribution&gtBootstrap")
+    DistributionBootstrapTemplate("&ltDistribution&gtBootstrapTemplates")
+    InfrastructureMachine("&ltInfrastructure&gtMachine")
+    InfrastructureMachineTemplate("&ltInfrastructure&gtMachineTemplate")
+    DistributionControlPlane("&ltDistribution&gtControlPlane")
     end
 
     CAPIControllers-->ClusterProvider
@@ -74,10 +76,12 @@ graph TD
     CAPIControllers-->MachineProvider
     CAPIControllers-->ControlPlaneProvider
     
-    ClusterProvider-.->ClusterProviderDescription
-    BootstrapProvider-.->BootstrapProviderDescription
-    MachineProvider-.->MachineProviderDescription
-    ControlPlaneProvider-.->ControlPlaneProviderDescription
+    ClusterProvider-.->InfrastructureCluster
+    BootstrapProvider-.->DistributionBootstrap
+    BootstrapProvider-.->DistributionBootstrapTemplate
+    MachineProvider-.->InfrastructureMachine
+    MachineProvider-.->InfrastructureMachineTemplate
+    ControlPlaneProvider-.->DistributionControlPlane
 ```
 
 > **Note**: Without any providers, CAPI would not be able to do anything since no one is executing the other side of the "hand-off"; it relies on providers to respond back with information on those desired fields to continue execution. This is why you need to deploy CAPI with at least one provider, which usually defaults to the [KubeAdm](https://kubernetes.io/docs/reference/setup-tools/kubeadm/) CAPI provider.
