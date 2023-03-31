@@ -108,6 +108,8 @@ graph TD
 >
 > As long as the CRD has those fields, it can be used in the `*Ref` fields (i.e. `infrastructureRef`, `controlPlaneRef`, `bootstrap.configRef`, etc.) of a CAPI CR.
 
+## Types Of CAPI Providers
+
 ### (Cluster) Infrastructure Provider
 
 A [Cluster Infrastructure Provider](https://cluster-api.sigs.k8s.io/developer/providers/cluster-infrastructure.html) is the **first** provider that gets called by the series of hand-offs from CAPI.
