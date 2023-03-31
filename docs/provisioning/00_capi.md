@@ -34,6 +34,16 @@ graph TD
     MachineHealthCheck1
     end
 
+    MachineHealthCheck1-->MachineA1
+    MachineHealthCheck1-->MachineA2
+    MachineHealthCheck1-->MachineA3
+    MachineHealthCheck1-->MachineB1
+    MachineHealthCheck1-->MachineB2
+    MachineHealthCheck1-->MachineB3
+```
+
+```mermaid
+graph TD
     subgraph Provider References
     InfrastructureCluster("&ltInfrastructure&gtClusters")
     DistributionBootstrap("&ltDistribution&gtBootstrap")
@@ -42,13 +52,6 @@ graph TD
     InfrastructureMachineTemplate("&ltInfrastructure&gtMachineTemplate")
     DistributionControlPlane("&ltDistribution&gtControlPlane")
     end
-
-    MachineHealthCheck1-->MachineA1
-    MachineHealthCheck1-->MachineA2
-    MachineHealthCheck1-->MachineA3
-    MachineHealthCheck1-->MachineB1
-    MachineHealthCheck1-->MachineB2
-    MachineHealthCheck1-->MachineB3
 ```
 
 Once these resources are created, it's expected that the CAPI "Provider" controllers will do the "real" work to provision the cluster.
