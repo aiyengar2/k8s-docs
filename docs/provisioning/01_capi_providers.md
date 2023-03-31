@@ -60,7 +60,7 @@ Control Plane Providers are expected to implement the following CRD:
 - `<Distribution>ControlPlane`: referenced by the `.spec.controlPlaneRef` of a CAPI `Cluster` CR. This contains the configuration of the cluster's controlplane, but is only used by CAPI to copy over status values
 
 
-On seeing the creation of a `<Distribution>ControlPlane` and a set of `Machine`s that are Ready, a control plane provider has a couple of jobs:
+On seeing a `<Distribution>ControlPlane` and a set of `Machine`s that are Ready, a control plane provider has a couple of jobs:
 - Initializing the control plane by managing the set of `Machine`s designated as control plane nodes and installing the controlplane components (`etcd`, `kube-api-server`, `kube-controller-manager`, `kube-scheduler`) and other optional services (`cloud-controller-manager`, `coredns` / `kubedns`, `kube-proxy`, etc.) onto it
 - Generating cluster certificates if they don't exist
 - Keeping track of the state of the controlplane across all nodes that comprise it
