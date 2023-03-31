@@ -84,12 +84,12 @@ In essence, as seen in [the description above](#how-does-capi-provision-clusters
 ## How Does CAPI Provision Clusters?
 
 CAPI's general workflow for provisioning clusters involves the following steps of "real" work, mostly executed by Providers:
-1. Create cluster-level infrastructure pieces **(handled by Cluster Infrastructure Provider)**
+1. Create cluster-level infrastructure pieces **(handled by [Cluster Infrastructure Provider](./01_capi_providers.md#cluster-infrastructure-provider))**
 2. **ONLY IF** using `MachineDeployment` / `MachineSet`: Create `Machine`, `<Infrastructure>Machine`, and `<Distribution>Bootstrap` objects resources for each replica requested in the `MachineSet` spec **(handled by CAPI Controllers)**
-3. Create a Machine Bootstrap Secret per `<Distribution>Bootstrap` that contains the script that needs to be installed right after provisioning a machine to add it to the Kubernetes cluster **(handled by Bootstrap Provider)**
-4. Provision a physical server per `<Infrastructure>Machine` by contacting the infrastructure provider (i.e. AWS, Azure, etc.) and running the bootstrap script in the Machine Bootstrap Secret on the machine before marking it as Ready **(handled by Machine Provider)**
+3. Create a Machine Bootstrap Secret per `<Distribution>Bootstrap` that contains the script that needs to be installed right after provisioning a machine to add it to the Kubernetes cluster **(handled by [Bootstrap Provider](./01_capi_providers.md#bootstrap-provider))**
+4. Provision a physical server per `<Infrastructure>Machine` by contacting the infrastructure provider (i.e. AWS, Azure, etc.) and running the bootstrap script in the Machine Bootstrap Secret on the machine before marking it as Ready **(handled by [Machine Provider](./01_capi_providers.md#machine-infrastructure-provider))**
 5. Copy the `<Infrastructure>Machine` fields over to the corresponding CAPI `Machine` **(handled by CAPI Controllers)**
-6. Initialize the cluster's controlplane (only once all `Machine`s are marked as Ready) using the configuration on the `<Distribution>ControlPlane` and join the bootstrapped nodes onto the controlplane; once all `Machine`s are joined, create a `KUBECONFIG` that can be used to access the newly provisioned cluster's Kubernetes API **(handled by ControlPlane Provider)**
+6. Initialize the cluster's controlplane (only once all `Machine`s are marked as Ready) using the configuration on the `<Distribution>ControlPlane` and join the bootstrapped nodes onto the controlplane; once all `Machine`s are joined, create a `KUBECONFIG` that can be used to access the newly provisioned cluster's Kubernetes API **(handled by [ControlPlane Provider](./01_capi_providers.md#control-plane-provider))**
 7. Copy the `<Distribution>ControlPlane` fields over to the corresponding CAPI `Cluster`, specifically including the control plane endpoint that can be used to communicate with the cluster **(handled by CAPI Controllers)**
 
 Once these steps have been taken, a user can run `clusterctl get kubeconfig` to access the newly provisioned downstream cluster's Kubernetes API.
