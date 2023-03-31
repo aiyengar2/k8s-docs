@@ -25,6 +25,8 @@ Once CAPI is installed, to create a cluster managed by CAPI (also known as a **d
 
 > **Note**: On a failed `MachineHealthCheck`, a `Machine` that is part of a `MachineSet` gets deleted and replaced with a fresh `Machine`
 
+You can visualize the relationship between CAPI CRDs **alone** with the following graph:
+
 ```mermaid
 graph TD
     subgraph CAPI Cluster
