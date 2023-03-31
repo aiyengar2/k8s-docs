@@ -63,10 +63,10 @@ graph TD
     MachineProvider("Machine Provider")
     ControlPlaneProvider("Control Plane Provider")
 
-    ClusterProviderDescription("Manages \<Infrastructure\>Clusters")
-    BootstrapProviderDescription("Bootstrap Provider")
-    MachineProviderDescription("Machine Provider")
-    ControlPlaneProviderDescription("Control Plane Provider")
+    ClusterProviderDescription("Manages &ltInfrastructure&gtClusters")
+    BootstrapProviderDescription("Manages &ltDistribution&gtBootstrap and &ltDistribution&gtBootstrapTemplates")
+    MachineProviderDescription("Manages &ltInfrastructure&gtMachine and &ltInfrastructure&gtMachineTemplate")
+    ControlPlaneProviderDescription("Manages &ltDistribution&gtControlPlane")
     end
 
     CAPIControllers-->ClusterProvider
