@@ -34,6 +34,15 @@ graph TD
     MachineHealthCheck1
     end
 
+    subgraph Provider References
+    InfrastructureCluster("&ltInfrastructure&gtClusters")
+    DistributionBootstrap("&ltDistribution&gtBootstrap")
+    DistributionBootstrapTemplate("&ltDistribution&gtBootstrapTemplates")
+    InfrastructureMachine("&ltInfrastructure&gtMachine")
+    InfrastructureMachineTemplate("&ltInfrastructure&gtMachineTemplate")
+    DistributionControlPlane("&ltDistribution&gtControlPlane")
+    end
+
     MachineHealthCheck1-->MachineA1
     MachineHealthCheck1-->MachineA2
     MachineHealthCheck1-->MachineA3
