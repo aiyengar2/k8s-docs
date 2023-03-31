@@ -12,19 +12,17 @@ Here are some of the high-level differences:
 
 One of the biggest differences is that most upstream CAPI providers only support **provisioning + bootstrapping** Machines, whereas Rancher supports **provisioning + managing** Machines via `rancher/system-agent`.
 
-### What is Bootstrapping?
-
-The term "bootstrapping" comes from the phrase "to pull oneself by one's bootstraps". 
-
-It refers to a self-starting process that continues and grows **without any user input**.
-
-In the case of Kubernetes components installed by Kubernetes distributions, this applies since the Kubernetes components themselves are typically managed by some underlying daemon on the host (i.e. `systemd`, `Docker`, etc.) that differs depending on the Kubernetes distribution you are working with.
-
-Therefore, once installed, the Kubernetes internal components are self-[re]starting processes that are capable of "pulling themselves by their bootstraps".
-
-This is why the process of installing the Kubernetes distribution onto a node is typically referred to as "bootstrapping" a node.
-
-### Bootstrapping Machines v.s. Managing Machines
+> **Note**: What is "bootstrapping" a machine?
+>
+> The term "bootstrapping" comes from the phrase "to pull oneself by one's bootstraps". 
+>
+> It refers to a self-starting process that continues and grows **without any user input**.
+>
+> In the case of Kubernetes components installed by Kubernetes distributions, this applies since the Kubernetes components themselves are typically managed by some underlying daemon on the host (i.e. `systemd`, `Docker`, etc.) that differs depending on the Kubernetes distribution you are working with.
+>
+> Therefore, once installed, the Kubernetes internal components are self-[re]starting processes that are capable of "pulling themselves by their bootstraps".
+>
+> This is why the process of installing the Kubernetes distribution onto a node is typically referred to as "bootstrapping" a node.
 
 **Bootstrapping** a machine is a **one-time** action on the machine to start the self-healing processes. 
 
