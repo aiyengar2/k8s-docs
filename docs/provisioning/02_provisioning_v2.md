@@ -20,18 +20,21 @@ Therefore, once installed, the Kubernetes internal components are self-[re]start
 
 This is why the process of installing the Kubernetes distribution onto a node is typically referred to as "bootstrapping" a node.
 
-### Bootstrapping v.s. Managing
+### Bootstrapping Machines v.s. Managing Machines
 
-It's important to distinguish between **bootstrapping** components, which is a **one-time** action on a node to start the self-healing processes, and **managing** components, which is a **continual** process that can receive user input to alter the behavior or configuration of the running self-healing processes.
+**Bootstrapping** a machine is a **one-time** action on the machine to start the self-healing processes. 
 
-This is the core of the difference between the approach to cluster provisioning that Rancher supports v.s. what upstream CAPI supports.
+**This is what upstream CAPI supports**.
 
-In upstream CAPI, you can only **bootstrap** new machines to add them onto an existing cluter. 
+This is why, in the upstream CAPI world:
+- `Machines` are immutable
+- `MachineDeployments` **replace** `Machines` instead of **re-configuring** the existing `Machine`
+- "Remediation" for failed `MachineHealthChecks` **delete** the unhealthy Machine (presumably to be replaced to satisfy the `MachineSet` requirements)
 
-This is why, in the upstream CAPI world, `Machines` are immutable, `MachineDeployments` **replace** `Machines` instead of **re-configuring** the existing `Machine`, and "remediation" for failed `MachineHealthChecks` **delete** the unhealthy node (presumably to be replaced to satisfy the `MachineSet` requirements).
+On the other hand, **managing** the mMchine is a **continual** process where the Machine can receive user input to alter the behavior or configuration of the running self-healing processes.
 
-While this may work well in environments where you can assume 
+**This is what Rancher's Provisioning V2 supports**
 
-however, this is not the case for Rancher's Provisioning V2 framework, which uses [`rancher/system-agent`](https://github.com/rancher/system-agent) to manage existing nodes without deleting them on changes to the cluster's configuration.
->
-> On the other hand, Rancher supports both bootstrapping and managing existing nodes. This is discussed in more detail below as we outline the way Provisioning V2 actually works under the hood.
+If Rancher stopped managing the Machine the moment is was Ready, it would be identical to any other normal Bootstrap Provider in the upstream CAPI world.
+
+However, instead Rancher installs [`rancher/system-agent`](https://github.com/rancher/system-agent), a daemon that will sit on the Machine and listen to a "Machine Plan Secret" that allows Rancher to tell the machine how to modify itself to satisfy a new control plane configuration.
