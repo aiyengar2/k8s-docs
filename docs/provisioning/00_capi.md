@@ -31,7 +31,7 @@ graph TD
     MachineB3
     end
     end
-    MachineHealthCheck
+    MachineHealthCheck1
     end
 
     MachineHealthCheck1-->MachineA1
