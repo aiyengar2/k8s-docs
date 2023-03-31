@@ -32,6 +32,12 @@ graph LR
     end
     end
     MachineHealthCheck
+
+    CAPI Controllers
+    AWS Cluster Infrastructure Provider Controllers
+    KubeAdm Bootstrap Provider Controllers
+    AWS Machine Provider Controllers
+    KubeAdm Control Plane Provider Controllers
     end
 
     MachineHealthCheck-->MachineA1
