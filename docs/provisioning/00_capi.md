@@ -1,29 +1,57 @@
-## What is Cluster API (CAPI)?
+# What is Cluster API (CAPI)?
 
 [Cluster API (CAPI)](https://cluster-api.sigs.k8s.io/introduction.html) is a declarative API for managing Kubernetes clusters.
 
-### Installing CAPI
+## Installing CAPI
 
 To use CAPI, a user must install the **CAPI controllers & CRDs** and one or more **CAPI "Provider" controllers & CRDs** onto a single cluster known as the **management / local** cluster.
 
 Once CAPI is installed, to create a cluster managed by CAPI (also known as a **downstream** cluster), a user will have to create a number of resources at the same time in the **local / management** cluster, including:
 - A `Machine`, which identifies a `<Infrastructure>Machine` and `<Distribution>Bootstrap` CR that implements it
 - A `MachineDeployment` / `MachineSet` similarly references a `<Infrastructure>MachineTemplate` and `<Distribution>BootstrapTemplate` CRs to create a set of `Machines`
-  - The `<Infrastructure>MachineTemplate` and `<Distribution>BootstrapTemplate` are used as the basis to create `<Infrastructure>Machine` and ``<Distribution>Bootstrap` when a new `Machine` is being created that is tied to a `MachineSet` or `MachineDeployment`
   - `MachineDeployment` : `MachineSet` : `Machine` has the same relationship as `Deployment` : `ReplicaSet` : `Pod`
 - A `Cluster`, which identifies a `<Distribution>Cluster` and `<Distribution>ControlPlane` CR that implements it
 - `MachineHealthCheck`s, which identify periodic actions that need to be executed on `Machine`s to verify they are healthy. On a failed `MachineHealthCheck`, a `Machine` that is part of a `MachineSet` gets deleted and replaced with a fresh `Machine`
 
+```mermaid
+graph LR
+    subgraph CAPI Cluster
+    direction BT
+    subgraph MachineDeploymentA
+    subgraph MachineSetA
+    MachineA1
+    MachineA2
+    MachineA3
+    end
+    end
+    subgraph MachineDeploymentB
+    subgraph MachineSetB
+    MachineB1
+    MachineB2
+    MachineB3
+    end
+    end
+    MachineHealthCheck
+    end
+
+    MachineHealthCheck-->MachineA1
+    MachineHealthCheck-->MachineA2
+    MachineHealthCheck-->MachineA3
+    MachineHealthCheck-->MachineB1
+    MachineHealthCheck-->MachineB2
+    MachineHealthCheck-->MachineB3
+```
+
 Once these resources are created, it's expected that the CAPI "Provider" controllers will do the "real" work to provision the cluster.
 
-### What is a CAPI Provider?
+## What is a CAPI Provider?
 
 CAPI has the concept of **providers**, or controllers that are implemented by third-parties (i.e. AWS, Azure, Rancher, etc.) that operate on their own custom CRDs to manage the underlying infrastructure.
 
 In essence, the model for CAPI's cluster provisioning workflow is to execute provisioning with a series of "hand-offs" to providers who implement the "real" code, e.g.
 - User creates a `MachineDeployment`, `MachineSet`, `Machine`, or `Cluster` CR referencing one or more provider CRs that the user also creates, like `<Infrastructure>MachineTemplate`, `<Infrastructure>Machine`, `<Infrastructure>Cluster`, or `<Infrastructure>ControlPlane` by running a single command like `clusterctl generate cluster [name] --kubernetes-version [version] | kubectl apply -f -`
-- The provider (which usually is taking the role of a [infrastructure provider](#infrastructure-providers) or [bootstrap provider](#bootstrap-providers)) detects the creation of its own CRs and does some action. **CAPI watches the provider CRs, but does no action till the provider is done**
-- Once the provider is done processing, the provider updates **certain, well-defined CAPI fields** on its own CRs and the CAPI controllers spring into action; on detecting that change in the provider CRs referenced by a CAPI CR, they **copy over the values of those CAPI fields** from the provider CR to the CAPI CR
+- The provider detects the creation of its own CRs and does some action. **CAPI watches the provider CRs, but does no action till the provider is done**
+- Once the provider is done processing, the provider updates **certain, well-defined CAPI fields** on its own CRs and the CAPI controllers spring into action; on detecting that change in the provider CRs referenced by a CAPI CR, they **copy over the values of those CAPI fields** from the provider CR to the CAPI CR and persist the modified CAPI CR onto the cluster
 - Once the CAPI CR's is re-enqueued by the CAPI controllers on detecting the update to the CAPI resource, CAPI is able to continue the provisioning process until the next "hand-off"
 
 > **Note**: Without any providers, CAPI would not be able to do anything since no one is executing the other side of the "hand-off"; it relies on providers to respond back with information on those desired fields to continue execution. This is why you need to deploy CAPI with at least one provider, which usually defaults to the [KubeAdm](https://kubernetes.io/docs/reference/setup-tools/kubeadm/) CAPI provider.
@@ -36,11 +64,38 @@ In essence, the model for CAPI's cluster provisioning workflow is to execute pro
 >
 > As long as the CRD has those fields, it can be used in the `*Ref` fields (i.e. `infrastructureRef`, `controlPlaneRef`, `bootstrap.configRef`, etc.) of a CAPI CR.
 
-### Infrastructure Providers
+### (Cluster) Infrastructure Provider
 
-An infrastructure provider provisions and manages **servers and other infrastructure resources (such as Network Security Groups, Subnets, Network Interfaces, etc.)** tied to different providers of infrastructures (such as AWS, Azure, DigitalOcean, etc. as listed [here](https://cluster-api.sigs.k8s.io/user/quick-start.html#initialization-for-common-providers)).
+A [Cluster Infrastructure Provider](https://cluster-api.sigs.k8s.io/developer/providers/cluster-infrastructure.html) is the **first** provider that gets called by the series of hand-offs from CAPI.
 
-Infrastructure Providers are expected to implement the following CRDs:
+This provider is expected to implement the following CRD:
+- `<Infrastructure>Cluster`: referenced by the `.spec.infrastructureRef` of a CAPI `Cluster` CR
+
+On seeing a `<Infrastructure>Cluster` (i.e. `AWSCluster`) for the first time, a Cluster Infrastructure Provider is supposed to create and manage any of the **cluster-level** infrastructure components, such as a cluser's Subnet(s), Network Security Group(s), etc. that would need to be created before provisioning any machines.
+
+> **Note**: As a point of clarification, Rancher's Cluster Infrastructure Provider's CRD is called an `RKECluster` since it is used as the generic Cluster Infrastructure CR for multiple infrastructure providers, although in theory Rancher should be having `DigitalOceanCluster`s or `LinodeCluster`s instead.
+>
+> This is because Rancher today does not support creating or managing **cluster-level infrastructure components** (which would normally be infrastructure-provider-specific) on behalf of downstream clusters.
+
+Then, once the downstream cluster's API is accessible, the Cluster Infrastructure Provider is supposed to fill in the `<Infrastructure>Cluster` with the controlplane endpoint that can be used by `clusterctl` to access the cluster's Kubernetes API; this is then copied over to the CAPI `Cluster` CR along with some other status fields.
+
+### Bootstrap Provider
+
+A [Bootstrap Provider](https://cluster-api.sigs.k8s.io/developer/providers/bootstrap.html) is the **second** provider that gets called by the series of hand-offs from CAPI.
+
+This provider is expected to implement the following CRDs:
+- `<Distribution>Bootstrap`: referenced by the `.spec.bootstrap.ConfigRef` of a CAPI `Machine` CR
+- `<Distribution>BootstrapTemplate`: referenced by the `.spec.bootstrap.ConfigRef` of a CAPI `MachineDeployment` or `MachineSet` CR
+
+On seeing a `<Distribution>Bootstrap` (i.e. `RKEBootstrap`), the Bootstrap Provider is expected to create a **Machine Bootstrap Secret** that is referenced by the `<Distribution>Bootstrap` under `.status.dataSecretName`.
+
+This **Machine Bootstrap Secret** is expected to contain a script (i.e. "bootstrap data") that should be run on each provisioned machine before marking it as ready; on successfully running the script, the machine is expected to have the relevant Kubernetes components onto the node for a given **Kubernetes distribution (i.e. kubeAdm, RKE, k3s/RKE2)**
+
+### Machine (Infrastructure) Provider
+
+A Machine Provider (also known as a [Machine Infrastructure Provider](https://cluster-api.sigs.k8s.io/developer/providers/machine-infrastructure.html)) is the **third** provider that gets called by the series of hand-offs from CAPI.
+
+Machine Providers are expected to implement the following CRDs:
 - `<Infrastructure>Machine`: referenced by the `.spec.infrastructureRef` of a CAPI `Machine` CR
 - `<Infrastructure>MachineTemplate`: referenced by the `.spec.infrastructureRef` of a CAPI `MachineSet` or `MachineDeployment` CR
 
@@ -48,23 +103,22 @@ Infrastructure Providers are expected to implement the following CRDs:
 >
 > The reason why this is necessary is because `<Infrastructure>MachineTemplate`s are mutable, whereas `<Infrastructure>Machine`s are immutable; on modifying a `<Infrastructure>MachineTemplate`, the next time that a `MachineDeployment` / `MachineSet` needs to create a `Machine`, the new `<Infrastructure>Machine` will match the new `<Infrastructure>MachineTemplate`, whereas older machines will continue to use the older version of what was contained in the `<Infrastructure>MachineTemplate` since their `<Infrastructure>Machine` remains unchanged.
 
-At the point of "hand-off" from the CAPI controllers to this provider, the infrastructure that is provisioned by an infrastructure provider is **completely agnostic of Kubernetes**; there's nothing specific to Kubernetes that is being installed at this stage to form a logical cluster.
+On seeing the creation of an `InfrastructureMachine`, a Machine Provider is responsible for **provisioning the physical server** from a provider of infrastructure (such as AWS, Azure, DigitalOcean, etc. as listed [here](https://cluster-api.sigs.k8s.io/user/quick-start.html#initialization-for-common-providers)) and **running a bootstrap script on the provisioned machine** (provided by the [Bootstrap Provider](#bootstrap-provider) via the **Machine Bootstrap Secret**).
 
-To give a clarifying example, in a popular Kubernetes analogy of [Kubernetes as a theme park](https://danlebrero.com/2018/07/09/kubernetes-explained-in-pictures-the-theme-park-analogy/), an infrastructure provider is the entity that gives you the physical land that you can build your theme park(s) on, but till you actually "set up" that land (i.e. add the bare necessities, like power, water, and other utilities), you can't start building the attractions for a theme park on top of it.
+The bootstrap script is typically run on the provisioned machine by providing the bootstrap data from the **Machine Bootstrap Secret** as a `cloud-init` script; if `cloud-init` is not available, it's expected to be directly run on the machine via `ssh`.
 
-Similarly, in the Kubernetes world, the "land" in this analogy is the physical servers you provision and "setting up" the land is installing the relevant Kubernetes components to actually "glue" those servers together to form a cluster you can start building attractions (i.e. deploying workloads) on top of.
+### Control Plane Provider
 
-"Setting up" the land is where Bootstrap Providers come into play.
+A [Control Plane Provider](https://cluster-api.sigs.k8s.io/developer/providers/machine-infrastructure.html)) is the **fourth** provider that gets called by the series of hand-offs from CAPI.
 
-### Bootstrap Providers
+A control plane provider actually handles [installing Kubernetes components](../controllers/00_introduction.md#what-does-it-mean-to-install-kubernetes-onto-a-set-of-servers) onto a given node / server . It's also responsible for generating cluster certificates if they don't exist, initializing the controlplane for a fresh cluster, and joining nodes of different roles onto an existing cluster's controlplane.
 
 A bootstrap provider actually handles [installing Kubernetes components](../controllers/00_introduction.md#what-does-it-mean-to-install-kubernetes-onto-a-set-of-servers) onto a given node / server for a given **Kubernetes distribution (i.e. kubeAdm, RKE, k3s/RKE2)**. It's also responsible for generating cluster certificates if they don't exist, initializing the controlplane for a fresh cluster, and joining nodes of different roles onto an existing cluster's controlplane.
 
 Bootstrap Providers are expected to implement the following CRDs:
-- `<Distribution>BootstrapTemplate`: referenced by the `.spec.bootstrap.ConfigRef` of a CAPI `MachineDeployment` or `MachineSet` CR
-- `<Distribution>Bootstrap`: referenced by the `.spec.bootstrap.ConfigRef` of a CAPI `Machine` CR. This encodes the `cloud-init` script that should be run on each provisioned machine to install the relevant Kubernetes components onto the node (if `cloud-init` doesn't exist, this script is directly ran via `ssh` before marking a node as provisioned). This script is placed into a Secret which can be referenced via the object's `status.dataSecretName`; it's expected that the Infrastructure Provider actually performs this script on provisioning a `Machine`
+
 - `<Distribution>ControlPlane`: referenced by the `.spec.controlPlaneRef` of a CAPI `Cluster` CR. This contains the configuration of the cluster's controlplane, but is only used by CAPI to copy over status values
-- `<Distribution>Cluster`: referenced by the `.spec.infrastructureRef` of a CAPI `Cluster` CR. This contains the controlplane endpoint that can be used by `clusterctl` to access the cluster's Kubernetes API, which is copied over to the CAPI `Cluster` CR along with some other status fields
+
 
 > **Note**: What is [`cloud-init`](https://cloud-init.io/)?
 >
