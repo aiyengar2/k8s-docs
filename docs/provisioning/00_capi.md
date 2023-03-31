@@ -18,7 +18,9 @@ Once CAPI is installed, to create a cluster managed by CAPI (also known as a **d
 
 - A `Cluster`, which identifies a `<Distribution>Cluster` and `<Distribution>ControlPlane` CR that implements it
 
-- One or more `MachineHealthCheck`s, each of which identify periodic actions that need to be executed on `Machine`s to verify they are healthy. On a failed `MachineHealthCheck`, a `Machine` that is part of a `MachineSet` gets deleted and replaced with a fresh `Machine`
+- One or more `MachineHealthCheck`s, each of which identify periodic actions that need to be executed on `Machine`s to verify they are healthy
+
+> **Note**: On a failed `MachineHealthCheck`, a `Machine` that is part of a `MachineSet` gets deleted and replaced with a fresh `Machine`
 
 The manifest containing these resources is what is normally produced by running `clusterctl generate cluster` with the appropriate command-line arguments.
 
