@@ -90,8 +90,8 @@ graph TD
     InfrastructureMachineTemplate("&ltInfrastructure&gtMachineTemplate")
     DistributionControlPlane("&ltDistribution&gtControlPlane")
 
-    PhysicalServer("Physical Server")
-    MachineBootstrapSecret("Machine Bootstrap Secret")
+    PhysicalServer{"Physical Server"}
+    MachineBootstrapSecret{"Machine Bootstrap Secret"}
     end
 
     CAPIControllers--On Cluster Create-->ClusterProvider
