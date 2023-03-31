@@ -77,11 +77,7 @@ Once these steps have been taken, a user can run `clusterctl get kubeconfig` to 
 ```mermaid
 graph TD
     CAPIControllers("CAPI Controllers")
-    subgraph CAPI CRs
-    CAPICluster("CAPI Cluster")
-    CAPIMachine("CAPI Machines(s)")
-    CAPIMachineHealthChecks("CAPI MachineHealthCheck(s)")
-    end
+
     subgraph Providers
     ClusterProvider("Cluster Provider")
     BootstrapProvider("Bootstrap Provider")
@@ -103,9 +99,6 @@ graph TD
     MachineBootstrapSecret("Machine Bootstrap Secret")
     KubeConfig("KUBECONFIG")
     end
-
-    CAPIControllers--Copy Fields-->CAPICluster
-    CAPIControllers--Copy Fields-->CAPIMachine
 
     CAPIControllers--On Cluster Create-->ClusterProvider
     CAPIControllers--Before Machines Create-->BootstrapProvider
