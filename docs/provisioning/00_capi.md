@@ -63,7 +63,7 @@ graph TD
     MachineProvider("Machine Provider")
     ControlPlaneProvider("Control Plane Provider")
 
-    ClusterProviderDescription("Manages `<Infrastructure>Clusters`")
+    ClusterProviderDescription("Manages <Infrastructure>Clusters")
     BootstrapProviderDescription("Bootstrap Provider")
     MachineProviderDescription("Machine Provider")
     ControlPlaneProviderDescription("Control Plane Provider")
