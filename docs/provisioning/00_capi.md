@@ -56,6 +56,7 @@ In essence, the model for CAPI's cluster provisioning workflow is to execute pro
 
 ```mermaid
 graph TD
+    CAPIControllers("CAPI Controllers")
     subgraph Providers
     ClusterProvider("Cluster Provider")
     BootstrapProvider("Bootstrap Provider")
