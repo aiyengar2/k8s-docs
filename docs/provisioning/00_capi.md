@@ -34,12 +34,12 @@ graph TD
     MachineHealthCheck
     end
 
-    MachineHealthCheck-->MachineA1
-    MachineHealthCheck-->MachineA2
-    MachineHealthCheck-->MachineA3
-    MachineHealthCheck-->MachineB1
-    MachineHealthCheck-->MachineB2
-    MachineHealthCheck-->MachineB3
+    MachineHealthCheck1-->MachineA1
+    MachineHealthCheck1-->MachineA2
+    MachineHealthCheck1-->MachineA3
+    MachineHealthCheck1-->MachineB1
+    MachineHealthCheck1-->MachineB2
+    MachineHealthCheck1-->MachineB3
 ```
 
 Once these resources are created, it's expected that the CAPI "Provider" controllers will do the "real" work to provision the cluster.
@@ -54,6 +54,20 @@ In essence, the model for CAPI's cluster provisioning workflow is to execute pro
 - Once the provider is done processing, the provider updates **certain, well-defined CAPI fields** on its own CRs and the CAPI controllers spring into action; on detecting that change in the provider CRs referenced by a CAPI CR, they **copy over the values of those CAPI fields** from the provider CR to the CAPI CR and persist the modified CAPI CR onto the cluster
 - Once the CAPI CR's is re-enqueued by the CAPI controllers on detecting the update to the CAPI resource, CAPI is able to continue the provisioning process until the next "hand-off"
 
+```mermaid
+graph TD
+    subgraph Providers
+    ClusterProvider("Cluster Provider")
+    BootstrapProvider("Bootstrap Provider")
+    MachineProvider("Machine Provider")
+    ControlPlaneProvider("Control Plane Provider")
+    end
+    CAPIControllers-->ClusterProvider
+    CAPIControllers-->BootstrapProvider
+    CAPIControllers-->MachineProvider
+    CAPIControllers-->ControlPlaneProvider
+```
+
 > **Note**: Without any providers, CAPI would not be able to do anything since no one is executing the other side of the "hand-off"; it relies on providers to respond back with information on those desired fields to continue execution. This is why you need to deploy CAPI with at least one provider, which usually defaults to the [KubeAdm](https://kubernetes.io/docs/reference/setup-tools/kubeadm/) CAPI provider.
 
 > **Note**: The reason why providers create their own custom CRDs is so that they have full control over adding additional fields under `.status`, `.spec`, or whatever other fields they would like to expose on their CRDs. 
@@ -63,16 +77,6 @@ In essence, the model for CAPI's cluster provisioning workflow is to execute pro
 > The only expectation that CAPI has in turn is that the CRDs themselves have to have certain specific well-defined `status` and `spec` fields, depending on the type of resource that CRD represents. These expectations are outlined in its [provider contract documentation](https://cluster-api.sigs.k8s.io/developer/providers/contracts.html), such as the fact that any CRD implementing `Cluster` needs to have `.spec.controlPlaneEndpoint` so that CAPI can copy that field over to the CAPI `Cluster` CR's `.spec.controlPlaneEndpoint`.
 >
 > As long as the CRD has those fields, it can be used in the `*Ref` fields (i.e. `infrastructureRef`, `controlPlaneRef`, `bootstrap.configRef`, etc.) of a CAPI CR.
-
-```mermaid
-graph TD
-    subgraph Provider Workflow
-    ClusterProvider("Cluster Provider")
-    BootstrapProvider("Bootstrap Provider")
-    MachineProvider("Machine Provider")
-    ControlPlaneProvider("Control Plane Provider")
-    end
-```
 
 ### (Cluster) Infrastructure Provider
 
