@@ -10,7 +10,9 @@ Here are some of the high-level differences:
 
 ### Bootstrapping v.s. Managing `Machine`s
 
-> **Note**: What is "bootstrapping" a machine?
+Upstream CAPI only supports **bootstrapping** a Machine is a **one-time** action on the machine to start the Kubernetes internal components with a specific configuration on a Machine. 
+
+> **Note**: What is "bootstrapping"?
 >
 > The term "bootstrapping" comes from the phrase "to pull oneself by one's bootstraps". 
 >
@@ -22,14 +24,11 @@ Here are some of the high-level differences:
 >
 > This is why the process of installing the Kubernetes distribution onto a node is typically referred to as "bootstrapping" a node.
 
-**Bootstrapping** a machine is a **one-time** action on the machine to start the self-healing processes. 
-
-**This is what upstream CAPI supports**.
-
 This is why, in the upstream CAPI world:
-- `Machines` are immutable
-- `MachineDeployments` **replace** `Machines` instead of **re-configuring** the existing `Machine`
+- `Machine`s are immutable
+- `MachineDeployment`s **replace** `Machine`s instead of **re-configuring** the existing `Machine`
 - "Remediation" for failed `MachineHealthChecks` **delete** the unhealthy Machine (presumably to be replaced to satisfy the `MachineSet` requirements)
+- "Remediation" for modifications to the cluster's control plane configuration **replaces** existing control plane `Machine`s
 
 On the other hand, **managing** the mMchine is a **continual** process where the Machine can receive user input to alter the behavior or configuration of the running self-healing processes.
 
