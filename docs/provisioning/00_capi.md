@@ -103,7 +103,7 @@ graph TD
     BootstrapProvider-.->DistributionBootstrap
     BootstrapProvider-.->DistributionBootstrapTemplate
     DistributionBootstrap-.->MachineBootstrapSecret
-    MachineBootstrapSecret-->PhysicalServer
+    MachineBootstrapSecret-.->InfrastructureMachine
     MachineProvider-.->InfrastructureMachine
     InfrastructureMachine-.->PhysicalServer
     MachineProvider-.->InfrastructureMachineTemplate
