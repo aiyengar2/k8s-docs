@@ -14,13 +14,7 @@ Once CAPI is installed, to create a cluster managed by CAPI (also known as a **d
 - `MachineHealthCheck`s, which identify periodic actions that need to be executed on `Machine`s to verify they are healthy. On a failed `MachineHealthCheck`, a `Machine` that is part of a `MachineSet` gets deleted and replaced with a fresh `Machine`
 
 ```mermaid
-graph LR
-    CAPIController("CAPI Controllers")
-    AWSClusterController("AWS Cluster Infrastructure Provider Controllers")
-    KubeAdmBootstrapController("KubeAdm Bootstrap Provider Controllers")
-    AWSMachineController("AWS Machine Provider Controllers")
-    ControlPlaneController("KubeAdm Control Plane Provider Controllers")
-    
+graph TD
     subgraph CAPI Cluster
     direction BT
     subgraph MachineDeploymentA
@@ -69,6 +63,16 @@ In essence, the model for CAPI's cluster provisioning workflow is to execute pro
 > The only expectation that CAPI has in turn is that the CRDs themselves have to have certain specific well-defined `status` and `spec` fields, depending on the type of resource that CRD represents. These expectations are outlined in its [provider contract documentation](https://cluster-api.sigs.k8s.io/developer/providers/contracts.html), such as the fact that any CRD implementing `Cluster` needs to have `.spec.controlPlaneEndpoint` so that CAPI can copy that field over to the CAPI `Cluster` CR's `.spec.controlPlaneEndpoint`.
 >
 > As long as the CRD has those fields, it can be used in the `*Ref` fields (i.e. `infrastructureRef`, `controlPlaneRef`, `bootstrap.configRef`, etc.) of a CAPI CR.
+
+```mermaid
+graph TD
+    subgraph Provider Workflow
+    ClusterProvider("Cluster Provider")
+    BootstrapProvider("Bootstrap Provider")
+    MachineProvider("Machine Provider")
+    ControlPlaneProvider("Control Plane Provider")
+    end
+```
 
 ### (Cluster) Infrastructure Provider
 
