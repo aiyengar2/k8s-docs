@@ -90,8 +90,9 @@ graph TD
     InfrastructureMachineTemplate("&ltInfrastructure&gtMachineTemplate")
     DistributionControlPlane("&ltDistribution&gtControlPlane")
 
-    PhysicalServer{"Physical Server"}
+    PhysicalServer("Physical Server")
     MachineBootstrapSecret("Machine Bootstrap Secret")
+    KubeConfig("KUBECONFIG")
     end
 
     CAPIControllers--On Cluster Create-->ClusterProvider
@@ -107,6 +108,7 @@ graph TD
     InfrastructureMachine-.->PhysicalServer
     MachineProvider-.->InfrastructureMachineTemplate
     ControlPlaneProvider-.->DistributionControlPlane
+    DistributionControlPlane-.->KubeConfig
 ```
 
 ## What is a CAPI Provider?
