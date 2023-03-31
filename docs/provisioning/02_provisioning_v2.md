@@ -6,7 +6,11 @@ This document outlines how Rancher implements CAPI to power its Provisioning V2 
 
 While Rancher's Provisioning V2 is **almost fully compliant** with upstream CAPI's **minimum** expectations of what Providers are expected to do today, it's important to understand that Rancher has had a history of supporting provisioning Kubernetes clusters (via its legacy Provisioning V1 solution) that influenced how it chose to make design decisions around the way it implemented its CAPI providers for Provisioning V2.
 
-Specifically, one of the biggest differences is that most upstream CAPI providers only support **provisioning + bootstrapping** Machines, whereas Rancher supports **provisioning + managing** Machines.
+Here are some of the high-level differences:
+
+### Bootstrapping v.s. Managing `Machine`s
+
+One of the biggest differences is that most upstream CAPI providers only support **provisioning + bootstrapping** Machines, whereas Rancher supports **provisioning + managing** Machines via `rancher/system-agent`.
 
 ### What is Bootstrapping?
 
