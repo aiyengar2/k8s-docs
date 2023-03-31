@@ -22,6 +22,7 @@ graph TD
     MachineA1("Machine A1")
     MachineA2("Machine A2")
     MachineA3("Machine A3")
+    MachineSetDescriptionA("Represents a set / pool of Machines in the Cluster")
     end
     end
     subgraph Machine Deployment B
@@ -29,7 +30,9 @@ graph TD
     MachineB1("Machine B1")
     MachineB2("Machine B2")
     MachineB3("Machine B3")
+    MachineSetDescriptionB("Represents a set / pool of Machines in the Cluster")
     end
+
     end
     MachineHealthCheck("MachineHealthCheck(s)")
     end
