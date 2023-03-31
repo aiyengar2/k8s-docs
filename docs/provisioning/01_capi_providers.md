@@ -45,7 +45,7 @@ Machine Providers are expected to implement the following CRDs:
 
 On seeing the creation of an `InfrastructureMachine`, a Machine Provider is responsible for **provisioning the physical server** from a provider of infrastructure (such as AWS, Azure, DigitalOcean, etc. as listed [here](https://cluster-api.sigs.k8s.io/user/quick-start.html#initialization-for-common-providers)) and **running a bootstrap script on the provisioned machine** (provided by the [Bootstrap Provider](#bootstrap-provider) via the **Machine Bootstrap Secret**).
 
-The bootstrap script is typically run on the provisioned machine by providing the bootstrap data from the **Machine Bootstrap Secret** as a `cloud-init` script; if `cloud-init` is not available, it's expected to be directly run on the machine via `ssh`.
+The bootstrap script is typically run on the provisioned machine by providing the bootstrap data from the **Machine Bootstrap Secret** as `cloud-init` configuration; if `cloud-init` is not available, it's expected to be directly run on the machine via `ssh` after provisioning it.
 
 > **Note**: What is [`cloud-init`](https://cloud-init.io/)?
 >
