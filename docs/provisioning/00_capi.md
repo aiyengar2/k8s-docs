@@ -82,14 +82,18 @@ graph TD
     BootstrapProvider("Bootstrap Provider")
     MachineProvider("Machine Provider")
     ControlPlaneProvider("Control Plane Provider")
+    end
 
+    subgraph Provider CRs
     InfrastructureCluster("&ltInfrastructure&gtCluster")
     DistributionBootstrap("&ltDistribution&gtBootstrap")
     DistributionBootstrapTemplate("&ltDistribution&gtBootstrapTemplate")
     InfrastructureMachine("&ltInfrastructure&gtMachine")
     InfrastructureMachineTemplate("&ltInfrastructure&gtMachineTemplate")
     DistributionControlPlane("&ltDistribution&gtControlPlane")
-
+    end
+    
+    subgraph Resources
     PhysicalServer("Physical Server")
     MachineBootstrapSecret("Machine Bootstrap Secret")
     KubeConfig("KUBECONFIG")
