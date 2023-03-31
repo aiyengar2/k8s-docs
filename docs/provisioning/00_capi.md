@@ -107,12 +107,10 @@ graph TD
     ClusterProvider-.->InfrastructureCluster
     BootstrapProvider-.->DistributionBootstrap
     BootstrapProvider-.->DistributionBootstrapTemplate
-    DistributionBootstrapTemplate-.->DistributionBootstrap
     DistributionBootstrap-.->MachineBootstrapSecret
     MachineProvider-.->InfrastructureMachine
     InfrastructureMachine-.->PhysicalServer
     MachineProvider-.->InfrastructureMachineTemplate
-    InfrastructureMachineTemplate-.->InfrastructureMachine
     ControlPlaneProvider-.->DistributionControlPlane
     DistributionControlPlane-.->KubeConfig
 ```
