@@ -14,16 +14,11 @@ To use CAPI, a user must install the **CAPI controllers & CRDs** and one or more
 This is generally achieved by running `clusterctl init`.
 
 Once CAPI is installed, to create a cluster managed by CAPI (also known as a **downstream** cluster), a user will have to create a number of CAPI resources at the same time in the **local / management** cluster that reference CAPI Provider resources that are created alongside it, including:
+- A `Cluster`, which identifies a `<Distribution>Cluster` and `<Distribution>ControlPlane` CR that implements it
 - One or more `Machine`s, each of which identify a `<Infrastructure>Machine` and `<Distribution>Bootstrap` CR that implements it
     - A `MachineDeployment` / `MachineSet` similarly references a `<Infrastructure>MachineTemplate` and `<Distribution>BootstrapTemplate` CRs to create a set of `Machine`s, `<Infrastructure>Machine`s, and `<Distribution>Bootstrap`s per replica requested in the spec
 
 > **Note**: `MachineDeployment` : `MachineSet` : `Machine` has the same relationship as `Deployment` : `ReplicaSet` : `Pod`
-
-> **Note** When CAPI sees a `MachineDeployment` / `MachineSet` with a given `<Distribution>BootstrapTemplate`, it will automatically create both a `Machine` and `<Distribution>Bootstrap` resource, where the `<Distribution>Bootstrap`'s specification exactly matches what was provided in the `<Distribution>BootstrapTemplate`.
->
-> The reason why this is necessary is because `<Distribution>BootstrapTemplate`s are mutable, whereas `<Distribution>Bootstrap`s are immutable; on modifying a `<Distribution>BootstrapTemplate`, the next time that a `MachineDeployment` / `MachineSet` needs to create a `Machine`, the new `<Distribution>Bootstrap` will match the new `<Distribution>BootstrapTemplate`, whereas older machines will continue to use the older version of what was contained in the `<Distribution>BootstrapTemplate` since their `<Distribution>Bootstrap` remains unchanged.
-
-- A `Cluster`, which identifies a `<Distribution>Cluster` and `<Distribution>ControlPlane` CR that implements it
 
 - One or more `MachineHealthCheck`s, each of which identify periodic actions that need to be executed on `Machine`s to verify they are healthy
 
@@ -60,6 +55,14 @@ graph TD
     MachineHealthCheck-->MachineB2
     MachineHealthCheck-->MachineB3
 ```
+
+> **Note** Notice that while `MachineDeployment`, `<Distribution>BootstrapTemplate`, and `<Infrastructure>MachineTemplate` are **mutable**, the resources that they spawn (i.e. `MachineSet` / `Machine`, `<Distribution>Bootstrap`, and `<Infrastructure>Machine`) are considered to be **immutable**.
+>
+> This is an intentional pattern in CAPI since it allows CAPI to support **strategic upgrades** in production, rather than upgrading all-at-once.
+>
+> To clarify, when you modify one of the mutable resources listed above (`MachineDeployment`, `<Distribution>BootstrapTemplate`, and `<Infrastructure>MachineTemplate`), all immutable resources that the spawned **prior to the mutation** are left unaffected by the change; instead, a new set of those same immutable resources (i.e. a new `Machine`, `<Distribution>Bootstrap`, and `<Infrastructure>Machine`) are spawned based on the new configuration.
+>
+> Once that immutable resource is ready, then only will CAPI get rid of the previous immutable resource (i.e. the old `Machine`, `<Distribution>Bootstrap`, and `<Infrastructure>Machine`) since it is no longer required.
 
 The manifest containing these resources is what is normally produced by running `clusterctl generate cluster` with the appropriate command-line arguments.
 
