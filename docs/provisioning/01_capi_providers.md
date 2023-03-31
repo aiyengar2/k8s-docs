@@ -1,5 +1,7 @@
 # CAPI Providers
 
+For a diagram showing the relationships between each of these providers, please see the [previous section](./00_capi.md#how-does-capi-provision-clusters)
+
 ## (Cluster) Infrastructure Provider
 
 A [Cluster Infrastructure Provider](https://cluster-api.sigs.k8s.io/developer/providers/cluster-infrastructure.html) is the **first** provider that gets called by the series of hand-offs from CAPI.
