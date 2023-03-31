@@ -51,32 +51,29 @@ On seeing the creation of an `InfrastructureMachine`, a Machine Provider is resp
 
 The bootstrap script is typically run on the provisioned machine by providing the bootstrap data from the **Machine Bootstrap Secret** as a `cloud-init` script; if `cloud-init` is not available, it's expected to be directly run on the machine via `ssh`.
 
-## Control Plane Provider
-
-A [Control Plane Provider](https://cluster-api.sigs.k8s.io/developer/architecture/controllers/control-plane.html) is the **fourth** provider that gets called by the series of hand-offs from CAPI.
-
-A control plane provider has three jobs:
-- Manages the set of `Machine`s designated as control plane nodes by installing the controlplane components (`etcd`, `kube-api-server`, `kube-controller-manager`, `kube-scheduler`) and other optional services (`cloud-controller-manager`, `coredns` / `kubedns`, `kube-proxy`, etc.) 
-- Keeping track of the state of the controlplane across all nodes that comprise it
-- Creating / managing a `KUBECONFIG` that can be used to access the cluster's Kubernetes API
-
-
-actually handles [configuring the installed Kubernetes components](../controllers/00_introduction.md#what-does-it-mean-to-install-kubernetes-onto-a-set-of-servers) onto a given node / server . It's also responsible for generating cluster certificates if they don't exist, initializing the controlplane for a fresh cluster, and joining nodes of different roles onto an existing cluster's controlplane.
-
-A bootstrap provider actually handles [installing Kubernetes components](../controllers/00_introduction.md#what-does-it-mean-to-install-kubernetes-onto-a-set-of-servers) onto a given node / server for a given **Kubernetes distribution (i.e. kubeAdm, RKE, k3s/RKE2)**. It's also responsible for generating cluster certificates if they don't exist, initializing the controlplane for a fresh cluster, and joining nodes of different roles onto an existing cluster's controlplane.
-
-Bootstrap Providers are expected to implement the following CRDs:
-
-- `<Distribution>ControlPlane`: referenced by the `.spec.controlPlaneRef` of a CAPI `Cluster` CR. This contains the configuration of the cluster's controlplane, but is only used by CAPI to copy over status values
-
-
 > **Note**: What is [`cloud-init`](https://cloud-init.io/)?
 >
 > Also known as "user data", it's generally used as a standard for providing a script that should be run on provisioned infrastructure, usually supported by most major cloud providers.
 
-> **Note** When CAPI sees a `MachineDeployment` / `MachineSet` with a given `<Distribution>BootstrapTemplate`, it will automatically create both a `Machine` and `<Distribution>Bootstrap` resource, where the `<Distribution>Bootstrap`'s specification exactly matches what was provided in the `<Distribution>BootstrapTemplate`.
->
-> The reason why this is necessary is because `<Distribution>BootstrapTemplate`s are mutable, whereas `<Distribution>Bootstrap`s are immutable; on modifying a `<Distribution>BootstrapTemplate`, the next time that a `MachineDeployment` / `MachineSet` needs to create a `Machine`, the new `<Distribution>Bootstrap` will match the new `<Distribution>BootstrapTemplate`, whereas older machines will continue to use the older version of what was contained in the `<Distribution>BootstrapTemplate` since their `<Distribution>Bootstrap` remains unchanged.
+## Control Plane Provider
+
+A [Control Plane Provider](https://cluster-api.sigs.k8s.io/developer/architecture/controllers/control-plane.html) is the **fourth** provider that gets called by the series of hand-offs from CAPI.
+
+A control plane provider has a couple of jobs:
+- Initializing the control plane by managing the set of `Machine`s designated as control plane nodes and installing the controlplane components (`etcd`, `kube-api-server`, `kube-controller-manager`, `kube-scheduler`) and other optional services (`cloud-controller-manager`, `coredns` / `kubedns`, `kube-proxy`, etc.) onto it
+- Generating cluster certificates if they don't exist
+- Keeping track of the state of the controlplane across all nodes that comprise it
+- Joining new ndoes onto the existing cluster's controlplane
+- Creating / managing a `KUBECONFIG` that can be used to access the cluster's Kubernetes API
+
+Control Plane Providers are expected to implement the following CRD:
+
+- `<Distribution>ControlPlane`: referenced by the `.spec.controlPlaneRef` of a CAPI `Cluster` CR. This contains the configuration of the cluster's controlplane, but is only used by CAPI to copy over status values
+
+
+
+
+
 
 Once the bootstrap provider has finished what it needs to do, the downstream cluster is expected to be fully provisioned; you can then run a `clusterctl` command to get the `KUBECONFIG` of your newly provisioned cluster.
 
