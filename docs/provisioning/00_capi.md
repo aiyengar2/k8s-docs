@@ -89,6 +89,8 @@ graph TD
     InfrastructureMachine("&ltInfrastructure&gtMachine")
     InfrastructureMachineTemplate("&ltInfrastructure&gtMachineTemplate")
     DistributionControlPlane("&ltDistribution&gtControlPlane")
+
+    MachineBootstrapSecret("Machine Bootstrap Secret")
     end
 
     CAPIControllers--On Cluster Create-->ClusterProvider
@@ -99,6 +101,7 @@ graph TD
     ClusterProvider-.->InfrastructureCluster
     BootstrapProvider-.->DistributionBootstrap
     BootstrapProvider-.->DistributionBootstrapTemplate
+    DistributionBootstrap-.->MachineBootstrapSecret
     MachineProvider-.->InfrastructureMachine
     MachineProvider-.->InfrastructureMachineTemplate
     ControlPlaneProvider-.->DistributionControlPlane
