@@ -59,11 +59,11 @@ Once these resources are created, it's expected that the CAPI "Provider" control
 ## How Does CAPI Provision Clusters?
 
 CAPI's general workflow for provisioning clusters involves the following steps of "real" work:
-1. Creating cluster-level infrastructure pieces **(Cluster Infrastructure Provider)**
+1. Create cluster-level infrastructure pieces **(Cluster Infrastructure Provider)**
 2. **ONLY IF** using `MachineDeployment` / `MachineSet`: Create `Machine`, `<Infrastructure>Machine`, and `<Distribution>Bootstrap` objects resources for each replica requested in the `MachineSet` spec **(CAPI Controllers)**
-3. Creating a Machine Bootstrap Secret per `<Distribution>Bootstrap` that contains the script that needs to be installed right after provisioning a machine to add it to the Kubernetes cluster **(Bootstrap Provider)**
-4. Provisioning a physical server per `<Infrastructure>Machine` by contacting the infrastructure provider (i.e. AWS, Azure, etc.) and running the bootstrap script in the Machine Bootstrap Secret on the machine before marking it as Ready **(Machine Provider)**)
-5. Once all machines are bootstrapped, initializing the cluster's controlplane and joining the bootstrapped nodes onto the controlplane **(ControlPlane Provider)**
+3. Create a Machine Bootstrap Secret per `<Distribution>Bootstrap` that contains the script that needs to be installed right after provisioning a machine to add it to the Kubernetes cluster **(Bootstrap Provider)**
+4. Provision a physical server per `<Infrastructure>Machine` by contacting the infrastructure provider (i.e. AWS, Azure, etc.) and running the bootstrap script in the Machine Bootstrap Secret on the machine before marking it as Ready **(Machine Provider)**)
+5. Initialize the cluster's controlplane (only once all `Machine`s are marked as Ready) and join the bootstrapped nodes onto the controlplane **(ControlPlane Provider)**
 
 Once the control plane has been initialized, the Control Plane Provider maintains a `KUBECONFIG` that can be retrieved by running `clusterctl get kubeconfig` to access the newly provisioned downstream cluster's Kubernetes API.
 
