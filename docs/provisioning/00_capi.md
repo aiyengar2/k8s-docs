@@ -15,6 +15,12 @@ Once CAPI is installed, to create a cluster managed by CAPI (also known as a **d
 
 ```mermaid
 graph LR
+    CAPIController("CAPI Controllers")
+    AWSClusterController("AWS Cluster Infrastructure Provider Controllers")
+    KubeAdmBootstrapController("KubeAdm Bootstrap Provider Controllers")
+    AWSMachineController("AWS Machine Provider Controllers")
+    ControlPlaneController("KubeAdm Control Plane Provider Controllers")
+    
     subgraph CAPI Cluster
     direction BT
     subgraph MachineDeploymentA
@@ -32,12 +38,6 @@ graph LR
     end
     end
     MachineHealthCheck
-
-    CAPIController("CAPI Controllers")
-    AWSClusterController("AWS Cluster Infrastructure Provider Controllers")
-    KubeAdmBootstrapController("KubeAdm Bootstrap Provider Controllers")
-    AWSMachineController("AWS Machine Provider Controllers")
-    ControlPlaneController("KubeAdm Control Plane Provider Controllers")
     end
 
     MachineHealthCheck-->MachineA1
