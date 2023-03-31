@@ -13,8 +13,11 @@ To use CAPI, a user must install the **CAPI controllers & CRDs** and one or more
 Once CAPI is installed, to create a cluster managed by CAPI (also known as a **downstream** cluster), a user will have to create a number of CAPI resources at the same time in the **local / management** cluster that reference CAPI Provider resources that are created alongside it, including:
 - A `Machine`, which identifies a `<Infrastructure>Machine` and `<Distribution>Bootstrap` CR that implements it
     - A `MachineDeployment` / `MachineSet` similarly references a `<Infrastructure>MachineTemplate` and `<Distribution>BootstrapTemplate` CRs to create a set of `Machine`s, `<Infrastructure>Machine`s, and `<Distribution>Bootstrap`s per replica requested in the spec
-    - `MachineDeployment` : `MachineSet` : `Machine` has the same relationship as `Deployment` : `ReplicaSet` : `Pod`
+
+> **Note**: `MachineDeployment` : `MachineSet` : `Machine` has the same relationship as `Deployment` : `ReplicaSet` : `Pod`
+
 - A `Cluster`, which identifies a `<Distribution>Cluster` and `<Distribution>ControlPlane` CR that implements it
+
 - `MachineHealthCheck`s, which identify periodic actions that need to be executed on `Machine`s to verify they are healthy. On a failed `MachineHealthCheck`, a `Machine` that is part of a `MachineSet` gets deleted and replaced with a fresh `Machine`
 
 The manifest containing these resources is what is normally produced by running `clusterctl generate cluster` with the appropriate command-line arguments.
