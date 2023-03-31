@@ -1,6 +1,8 @@
 # CAPI Providers
 
-For a diagram showing the relationships between each of these providers, please see the [previous section](./00_capi.md#how-does-capi-provision-clusters)
+This document does a deep-dive into each of the providers that CAPI expects a third-party to implement to provision a cluster.
+
+For a diagram showing the relationships between each of these providers and how they all fit together, please see the [previous section](./00_capi.md#how-does-capi-provision-clusters).
 
 ## (Cluster) Infrastructure Provider
 
@@ -27,7 +29,11 @@ This provider is expected to implement the following CRDs:
 
 On seeing a `<Distribution>Bootstrap` (i.e. `RKEBootstrap`), the Bootstrap Provider is expected to create a **Machine Bootstrap Secret** that is referenced by the `<Distribution>Bootstrap` under `.status.dataSecretName`.
 
-This **Machine Bootstrap Secret** is expected to contain a script (i.e. "bootstrap data") that should be run on each provisioned machine before marking it as ready; on successfully running the script, the machine is expected to have the relevant Kubernetes components onto the node for a given **Kubernetes distribution (i.e. kubeAdm, RKE, k3s/RKE2)**
+This **Machine Bootstrap Secret** is expected to contain a script (i.e. "bootstrap data") that should be run on each provisioned machine before marking it as ready; on successfully running the script, the machine is expected to have the relevant Kubernetes components onto the node for a given **Kubernetes distribution (i.e. kubeAdm, RKE, k3s/RKE2)**.
+
+> **Note**: A point of clarification is that the Bootstrap Provider is not involved in actually running the script to bootstrap a machine.
+>
+> Running the script defined by the bootstrap provider falls under the purview of the [Machine Infrastructure Provider](#machine-infrastructure-provider).
 
 ## Machine (Infrastructure) Provider
 
