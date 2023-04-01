@@ -35,6 +35,7 @@ This includes:
 
 On updating the configuration of a CAPI-provisioned cluster, the normal CAPI strategy would be to **bootstrap** new machines and delete the old ones.
 
+This is because upstream CAPI only supports **bootstrapping** a Machine, a **one-time** action on the machine to start the Kubernetes internal components with a specific configuration of each component.
 
 > **Note**: Why is this called "bootstrapping"?
 >
@@ -47,8 +48,6 @@ On updating the configuration of a CAPI-provisioned cluster, the normal CAPI str
 > Therefore, once installed, the Kubernetes internal components are self-[re]starting processes that are capable of "pulling themselves by their bootstraps".
 >
 > This is why the process of installing the Kubernetes distribution onto a node is typically referred to as "bootstrapping" a node.
-
-This is because upstream CAPI only supports **bootstrapping** a Machine, a **one-time** action on the machine to start the Kubernetes internal components with a specific configuration of each component.
 
 This is why, in the upstream CAPI world:
 - `Machine`s are immutable
