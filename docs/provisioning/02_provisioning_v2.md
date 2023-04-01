@@ -35,7 +35,7 @@ This includes:
 
 On updating the configuration of a CAPI-provisioned cluster, the normal CAPI strategy would be to **bootstrap** new machines and delete the old ones.
 
-This is because upstream CAPI only supports **bootstrapping** a Machine, a **one-time** action on the machine to start the Kubernetes internal components with a specific configuration of each component.
+This is because most upstream CAPI Providers only support **bootstrapping** a Machine, a **one-time** action on the machine to start the Kubernetes internal components with a specific configuration of each component.
 
 > **Note**: Why is this called "bootstrapping"?
 >
