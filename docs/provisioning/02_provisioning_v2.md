@@ -67,7 +67,7 @@ By updating the Machine Plan Secret, `rancher/system-agent` is informed about a 
 
 > **Note**: Just because Rancher manages the Kubernetes Internal Components **does not** mean it is breaking the CAPI Bootstrap Provider contract.
 >
-> If Rancher stopped managing the Machine the moment is was Ready, it would be identical to any other normal Bootstrap Provider in the upstream CAPI world; it just happens to be able to continue to pass on updates, partially due to the highly declarative design of RKE2 / K3s.
+> If Rancher stopped managing the Machine the moment is was Ready, it would be identical to any other normal Bootstrap Provider in the upstream CAPI world; it just happens to be able to continue to pass on updates, which is partially only possible due to the highly declarative design of RKE2 / K3s as a Kubernetes distribution.
 
 > **Note**: For those familiar with the analogy, the primary advantage of managing servers as opposed to replacing them is tht Rancher supports both provisioning servers that need be treated as "pets" (i.e. hard to replace) as well as those that can be treated as "cattle" (i.e. can be easily swapped).
 
