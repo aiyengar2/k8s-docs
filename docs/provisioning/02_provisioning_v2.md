@@ -63,27 +63,25 @@ This daemon has `KUBECONFIG` that allows it to watch for a **"Machine Plan Secre
 
 The Machine Plan Secret is kept up-to-date by a special set of **RKE Planner** controllers that are part of the Provisioning V2 [Control Plane Provider](./01_capi_providers.md#control-plane-provider) implementation.
 
-By updating the Machine Plan Secret, `rancher/system-agent` is informed about a **Plan** that needs to be executed on the node to reconcile the node against the new cluster configuration, which it then executes and reports back.
+By updating the Machine Plan Secret, `rancher/system-agent` is informed about a **Plan** that needs to be executed on the node to reconcile the node against the new cluster configuration, which it then executes and reports back via the same Machine Plan Secret.
 
 > **Note**: Just because Rancher manages the Kubernetes Internal Components does not mean it is breaking the CAPI Bootstrap Provider contract.
 >
 > If Rancher stopped managing the Machine the moment is was Ready, it would be identical to any other normal Bootstrap Provider in the upstream CAPI world; it just happens to be able to continue to pass on updates, partially due to the highly declarative design of RKE2 / K3s.
 
-However, instead Rancher installs [`rancher/system-agent`](https://github.com/rancher/system-agent), a daemon that will sit on the Machine and listen to a "Machine Plan Secret" that allows Rancher to tell the machine how to modify itself to satisfy a new control plane configuration.
+> **Note**: For those familiar with the analogy, the primary advantage of managing servers as opposed to replacing them is tht Rancher supports both provisioning servers that need be treated as "pets" (i.e. hard to replace) as well as those that can be treated as "cattle" (i.e. can be easily swapped).
 
+#### "Air-gapped" Downstream Clusters
 
+An "air-gapped" cluster is a cluster that is not advertised or accessible to **incoming** connections, primarily for security purposes.
 
+To support generating a `KUBECONFIG` that can be used to send requests to this "air-gapped" cluster, Rancher deploys components onto the downstream cluster that contain a **reverse tunnel client** powered by a [`rancher/remotedialer`](https://github.com/rancher/remotedialer), a Layer 4 TCP Remote Tunnel Dialer.
 
+On the downstream cluster being fully provisioned, this deployed client registers with Rancher running in the local / management cluster (which hosts a **reverse tunnel server** at a registration endpoint in its API).
 
+On a downstream cluster registering with Rancher, Rancher can expose an endpoint that allows access to the downstream API provided that a user has a valid **Rancher authentication token** that grants it permission to access the downstream cluster by impersonating some user in that cluster.
 
-
-
-
-
-        - 
-        - 
-    - For those familiar with the analogy, this advantage should read as "Rancher supports both provisioning servers that need be treated as `pets` (i.e. hard to replace) as well as those that can be treated as `cattle` (i.e. can be easily swapped)"
-- Airgapped clusters (clusters that are not exposed to the broader internet for incoming connections)
+This endpoint and the user's Rancher authentication token are then directly used to define `KUBECONFIG` that the user can use to communicate with the downstream, air-gapped cluster via Rancher.
 
 ## A "Brief" Note On Rancher And CAPI
 
