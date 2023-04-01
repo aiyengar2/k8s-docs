@@ -28,8 +28,8 @@ Unlike most other CAPI Machine Providers, Rancher implements a **generic Machine
 
 This includes:
   - Dynamically creating and implementing CRDs for `<Infrastructure>Config`s, `<Infrastructure>MachineTemplate`s, and `<Infrastructure>Machine`s on registering a new Node Driver
-  - Running provisioning `Jobs` that execute [`rancher/machine`](https://github.com/rancher/machine) to provision and bootstrap
-  - Supporting SSHing onto provisioned hosts after creation since it stores the host SSH keys that are returned from the provisioning `Job` as a Kubernetes Secret in the local / management cluster
+  - Running provisioning `Jobs` that execute [`rancher/machine`](https://github.com/rancher/machine) to provision and bootstrap new servers
+  - Supporting SSHing onto provisioned hosts after creation using host SSH keys returned by the provisioning `Job`
 
 ### Managing Machines Instead Of "Re-Bootstrapping"
 
