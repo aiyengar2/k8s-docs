@@ -63,9 +63,9 @@ This daemon has `KUBECONFIG` that allows it to watch for a **"Machine Plan Secre
 
 The Machine Plan Secret is kept up-to-date by a special set of **RKE Planner** controllers that are part of the Provisioning V2 [Control Plane Provider](./01_capi_providers.md#control-plane-provider) implementation.
 
-By updating the Machine Plan Secret, `rancher/system-agent` is informed about a **Plan** that needs to be executed on the node to reconcile the node against the new cluster configuration, which it then executes and reports back via the same Machine Plan Secret.
+By updating the Machine Plan Secret, `rancher/system-agent` is informed about a **Plan** that needs to be executed on the node to reconcile the node against the new cluster configuration; once `rancher/system-agent` finishes executing this plan successfully, it reports this back via the same Machine Plan Secret.
 
-> **Note**: Just because Rancher manages the Kubernetes Internal Components does not mean it is breaking the CAPI Bootstrap Provider contract.
+> **Note**: Just because Rancher manages the Kubernetes Internal Components **does not** mean it is breaking the CAPI Bootstrap Provider contract.
 >
 > If Rancher stopped managing the Machine the moment is was Ready, it would be identical to any other normal Bootstrap Provider in the upstream CAPI world; it just happens to be able to continue to pass on updates, partially due to the highly declarative design of RKE2 / K3s.
 
