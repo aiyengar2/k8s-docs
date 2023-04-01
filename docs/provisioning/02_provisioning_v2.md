@@ -73,9 +73,9 @@ By updating the Machine Plan Secret, `rancher/system-agent` is informed about a 
 
 #### Airgapped Downstream Clusters
 
-An "airgapped" cluster is a cluster that is not advertised or accessible to **incoming** connections, primarily for security purposes.
+An "airgapped" cluster is a cluster that is not advertised or accessible to **incoming** connections from the external world, primarily for security considerations.
 
-To support generating a `KUBECONFIG` that can be used to send requests to this airgapped cluster, Rancher deploys components onto the downstream cluster that contain a **reverse tunnel client** powered by a [`rancher/remotedialer`](https://github.com/rancher/remotedialer), a Layer 4 TCP Remote Tunnel Dialer.
+To support generating a `KUBECONFIG` that can be used to send requests to this airgapped cluster, Rancher deploys a component (`cluster-agent`) onto the downstream cluster that contains a **reverse tunnel client** powered by a [`rancher/remotedialer`](https://github.com/rancher/remotedialer), a Layer 4 TCP Remote Tunnel Dialer.
 
 On the downstream cluster being fully provisioned, this deployed client registers with Rancher running in the local / management cluster (which hosts a **reverse tunnel server** at a registration endpoint in its API).
 
