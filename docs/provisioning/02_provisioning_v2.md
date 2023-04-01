@@ -4,7 +4,7 @@ Provisioning V2 is the set of controllers embedded into Rancher that implement i
 
 ## How Does Provisioning V2 Work?
 
-To support Provisioning V2, Rancher directly embeds the upstream CAPI controllers into Rancher.
+In Provisioning V2, Rancher directly embeds the upstream CAPI controllers into Rancher.
 
 Then, it defines a set of Provisioning V2's controllers that implement [all of the providers that CAPI supports](./01_capi_providers.md) and adds additional functionality that offers advantages over existing vanilla CAPI-provider solutions, such as providing support for the following features.
 
