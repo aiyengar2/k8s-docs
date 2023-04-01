@@ -1,17 +1,8 @@
 # Provisioning V2
 
-## What is CAPI (Cluster API)?
-
-
-> **Note**: Rancher's Provisioning V2 is **not CAPI**; it is considered to be "CAPI-driven", which means that while it uses CAPI's controllers (which are embedded directly into Rancher) to **initially** drive the provisioning of nodes and clusters, it handles features like upgrading existing nodes and clusters for a new configuration (e.g. a new Kubernetes version) in a completely different way that upstream CAPI does once that initial process has taken place.
->
-> More on that below!
-
 ## What is Provisioning V2?
 
-As mentioned [in the note above](#what-is-capi-cluster-api), Rancher's Provisioning V2 framework is not strictly CAPI; it's considered to be a **"CAPI-driven" framework**, which means that it uses the same underlying embedded CAPI controllers but implements some of the building blocks of CAPI (i.e. Infrastructure Providers and Bootstrap Providers) in a way that is not in-line with upstream expectations.
-
-Also unlike normal CAPI, users **should not** directly interact with the embedded CAPI controllers by creating CAPI CRs (like `Clusters`, `MachineDeployments`, `MachineSets`, and `Machines`) or by directly creating the Rancher CAPI Provider CRs (like `RKECluster`, `RKEControlPlane`, `<Infrastructure>Machine`s, and `<Infrastructure>MachineTemplate`s).
+Unlike normal CAPI, users **should not** directly interact with the embedded CAPI controllers by creating CAPI CRs (like `Clusters`, `MachineDeployments`, `MachineSets`, and `Machines`) or by directly creating the Rancher CAPI Provider CRs (like `RKECluster`, `RKEControlPlane`, `<Infrastructure>Machine`s, and `<Infrastructure>MachineTemplate`s).
 
 Instead, users are expected to just create one or more `<Infrastructure>Config`s (i.e. `DigitalOceanConfig`, `AzureConfig`, etc.) and reference them in a single `provisioning.cattle.io` Cluster CR's `.spec.rkeConfig.machinePools[*].machineConfigRef`. 
 
