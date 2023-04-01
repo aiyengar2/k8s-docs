@@ -35,13 +35,6 @@ This includes:
 
 On updating the configuration of a CAPI-provisioned cluster, the normal CAPI strategy would be to **bootstrap** new machines and delete the old ones.
 
-This is because upstream CAPI only supports **bootstrapping** a Machine, a **one-time** action on the machine to start the Kubernetes internal components with a specific configuration of each component.
-
-This is why, in the upstream CAPI world:
-- `Machine`s are immutable
-- `MachineDeployment`s **replace** `Machine`s on modifications instead of **re-configuring** existing `Machine`s
-- "Remediation" for failed `MachineHealthChecks` **delete** the unhealthy Machine (presumably to be replaced to satisfy the `MachineSet` requirements)
-- "Remediation" for modifications to the cluster's control plane configuration **replaces** existing control plane `Machine`s with newly bootstrapped `Machine`s with the new control plane configuration
 
 > **Note**: Why is this called "bootstrapping"?
 >
@@ -54,6 +47,14 @@ This is why, in the upstream CAPI world:
 > Therefore, once installed, the Kubernetes internal components are self-[re]starting processes that are capable of "pulling themselves by their bootstraps".
 >
 > This is why the process of installing the Kubernetes distribution onto a node is typically referred to as "bootstrapping" a node.
+
+This is because upstream CAPI only supports **bootstrapping** a Machine, a **one-time** action on the machine to start the Kubernetes internal components with a specific configuration of each component.
+
+This is why, in the upstream CAPI world:
+- `Machine`s are immutable
+- `MachineDeployment`s **replace** `Machine`s on modifications instead of **re-configuring** existing `Machine`s
+- "Remediation" for failed `MachineHealthChecks` **delete** the unhealthy Machine (presumably to be replaced to satisfy the `MachineSet` requirements)
+- "Remediation" for modifications to the cluster's control plane configuration **replaces** existing control plane `Machine`s with newly bootstrapped `Machine`s with the new control plane configuration
 
 On the other hand, Rancher's Provisioning V2 supports **managing** a provisioned machine, a **continual** process where the Machine can receive user input to alter the behavior or configuration of the running Kubernetes components.
 
