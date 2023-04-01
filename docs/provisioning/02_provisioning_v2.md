@@ -1,6 +1,6 @@
 # What is Provisioning V2?
 
-Provisioning V2 is the set of controllers embedded into Rancher that implement its [RKE2](https://docs.rke2.io/) / [k3s](https://k3s.io/) cluster provisioning solution, powered by [CAPI](./00_capi.md).
+Provisioning V2 is the set of controllers embedded into Rancher that implement its [CAPI](./00_capi.md)-powered [RKE2](https://docs.rke2.io/) / [k3s](https://k3s.io/) provisioning solution.
 
 ## How Does Provisioning V2 Work?
 
