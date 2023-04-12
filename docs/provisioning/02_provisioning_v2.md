@@ -82,3 +82,7 @@ On the downstream cluster being fully provisioned, this deployed client register
 On a downstream cluster registering with Rancher, Rancher can expose an endpoint that allows access to the downstream API provided that a user has a valid **Rancher authentication token** that grants it permission to access the downstream cluster by impersonating some user in that cluster.
 
 This endpoint and the user's Rancher authentication token are then directly used to define `KUBECONFIG` that the user can use to communicate with the downstream, airgapped cluster via Rancher.
+
+## Next Up
+
+Next, we will walk through the [Provisioning V2 Provider Implementations](./03_provisioning_v2_providers.md)!
