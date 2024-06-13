@@ -238,9 +238,3 @@ https://helm.sh/docs/chart_best_practices/custom_resource_definitions/
 ### How to publish Helm Chart Repositories
 
 https://helm.sh/docs/topics/chart_repository/
-
-## Working with Helm Chart at Rancher
-
-### The `questions.yaml` file (Rancher-only)
-
-### Rancher Apps & Marketplace
