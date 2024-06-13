@@ -59,7 +59,7 @@ While the `cache.SharedIndexInformer` allows us to satisfy the definition of the
 
 3. **Generate code to make it easier to define custom types and controllers**: as listed on the section on the [Anatomy of a Kubernetes Resources](./01_clients.md#the-anatomy-of-a-kubernetes-resource), any custom type that is supposed to represent a Kubernetes resource needs to implement certain functions to be considered a Kubernetes resource, such as `GetObjectKind()` or `DeepCopyObject()` (which satisfies the `runtime.Object` interface). It should also be added to the Controller Framework's default `runtime.Scheme` to be used in `Shared*Factory` constructs. This is generally handled by code generation via `go generate` commands, which will create additional **typed** functions, eliminating the need for developers to type cast objects received by generic Handler functions.
 
-4. **Define helper code to encapsulte common controller design patterns**: these include special types of handlers such as `Register*StatusHandler`, `Register*GeneratingHandler`, `relatedresource.Watch` that simplify the logic necessary to be written on a controller **if it falls under a specific controller design pattern**.
+4. **Define helper code to encapsulate common controller design patterns**: these include special types of handlers such as `Register*StatusHandler`, `Register*GeneratingHandler`, `relatedresource.Watch` that simplify the logic necessary to be written on a controller **if it falls under a specific controller design pattern**.
 
 In the next part, we will talk about how the first two features are implemented by [`rancher/lasso`](https://github.com/rancher/lasso).
 
@@ -371,3 +371,10 @@ func (c *controller) syncHandler(key string) error {
 ```
 
 We have now implemented our first feature: **Re-trigger the reconciliation process on handler errors and handle reconciliation in parallel**!
+
+### TBD
+
+While these docs are not complete yet, it has yet to cover the following topics:
+1. How Lasso **manages creating Kubernetes clients and `cache.SharedIndexInformers` on multiple types of Kubernetes resources in an resource efficient manner** (`*Factory` resources)
+1. How Wrangler **generates code to make it easier to define custom types and controllers** (`go generate` with `kubebuilder`)
+4. How Wrangler **defines helper code to encapsulate common controller design patterns**: (`apply`, `Register*StatusHandler`, `Register*GeneratingHandler`, `relatedresource.Watch`, etc.)
